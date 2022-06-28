@@ -1,0 +1,22 @@
+{
+  "name": "private-blockchain",
+  "version": "1.0.0",
+  "description": "First project of udacity blockchain developer nanodegree program",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/IsmaelB83/private-blockchain.git"
+  },
+  "keywords": [
+    "Blockchain"
+  ],
+  "author": "Ismael Bernal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IsmaelB83/private-blockchain/issues"
+  },
+  "homepage": "https://github.com/IsmaelB83/private-blockchain#readme"
+}
