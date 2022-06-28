@@ -4,6 +4,7 @@
   "description": "First project of udacity blockchain developer nanodegree program",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/IsmaelB83/private-blockchain/issues"
   },
-  "homepage": "https://github.com/IsmaelB83/private-blockchain#readme"
+  "homepage": "https://github.com/IsmaelB83/private-blockchain#readme",
+  "dependencies": {
+    "crypto-js": "^4.1.1"
+  },
+  "type": "module"
 }
