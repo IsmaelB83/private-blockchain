@@ -3,17 +3,10 @@ import fs from 'fs'
 export function encodeHex(pathToFile) {
     const imgBuffer = fs.readFileSync(pathToFile)
     const imgEncoded = new Buffer.from(imgBuffer).toString('hex')
-    console.log(imgEncoded)
+    return imgEncoded
 }
 
-export function encodeHexToFile(pathToFile, encodedFile) {
-    const imgBuffer = fs.readFileSync(pathToFile)
-    const imgEncoded = new Buffer.from(imgBuffer).toString('hex')
-    fs.writeFileSync(encodedFile, imgEncoded)
-}
-
-export function decodeHexToFile(pathToFile, decodedFile) {
-    const imgBuffer = fs.readFileSync(pathToFile)
-    const imgDecoded = new Buffer.from(imgBuffer, 'hex')
+export function decodeHexToFile(imgEncoded, decodedFile) {
+    const imgDecoded = new Buffer.from(imgEncoded, 'hex')
     fs.writeFileSync(decodedFile, imgDecoded)
 }
