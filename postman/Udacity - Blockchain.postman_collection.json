@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "c3c3b4c2-5fc9-4a13-b7bc-2d94c502d6cf",
+		"name": "Udacity - Blockchain",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7016607"
+	},
+	"item": [
+		{
+			"name": "Hello world endpoint",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Log blockchain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/log",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Blockchain validate",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/blocks/validate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"blocks",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Blockchain by Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/blocks/address/1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"blocks",
+						"address",
+						"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Block Height",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/block/height/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"block",
+						"height",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Block Hash",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/block/hash/d6d13ffe0def122f70ab31af7549356400363410e7de63f285caec58b58f17e7",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"block",
+						"hash",
+						"d6d13ffe0def122f70ab31af7549356400363410e7de63f285caec58b58f17e7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Request validation",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"address\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/requestValidation",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"requestValidation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Submit Star",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"address\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN\",\n    \"message\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN:1656659756:starRegistry\",\n    \"signature\": \"GzqtPQAg10afpEJVFNvTFZg0QOaUeKwcdW/6YVuRGdCcKjcTk5DQT3XAoAXkIUOvKIByKjb1lVs1iSrc+EdlzSo=\",\n    \"star\": {\n        \"name\": \"Capricornio\",\n        \"coordenadas\": {\n            \"North\": \"N 21.22.44\",\n            \"East\": \"E 32.12.13\"\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/submitstar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"submitstar"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -36,7 +36,7 @@
                 3) http://localhost:8000/block/height/:height
                 4) http://localhost:8000/block/hash/:hash
                 5) http://localhost:8000/requestValidation
-                6) http://localhost:8000/submitstarnp
+                6) http://localhost:8000/submitstar
                 7) http://localhost:8000/blocks/validate
                 8) http://localhost:8000/blocks/address/:address
             `;
