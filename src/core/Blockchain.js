@@ -1,5 +1,6 @@
 // Node imports
 const sha256 = require('crypto-js/sha256.js');
+const bitcoinMessage = require('bitcoinjs-message');
 // Own imports
 const Block = require('./Block.js');
 
@@ -40,7 +41,7 @@ module.exports = class Blockchain {
     */
     async initializeChain() {
         if( this.height === -1){
-            let block = new Block({ data: 'Genesis Block' });
+            const block = new Block('Genesis Block');
             await this._addBlock(block);
         }
     }
@@ -50,18 +51,8 @@ module.exports = class Blockchain {
      * @returns promise that resolves with the chain height
      */
     getChainHeight() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             resolve(this.height);
-        });
-    }
-    
-    /**
-     * Utility method to obtain the last block of the chain
-     * @returns promise that resolves with the last block
-     */
-    getLatestBlock() {
-        return new Promise((resolve, reject) => {
-            resolve(this.chain[this.chain.length]);
         });
     }
     
@@ -77,16 +68,29 @@ module.exports = class Blockchain {
     * Note: the symbol `_` in the method name indicates in the javascript convention 
     * that this method is a private method. 
     */
-    _addBlock (newBlock) {
+    _addBlock (block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            newBlock.hash = sha256(JSON.stringify(newBlock)).toString()
-            newBlock.height = self.chain.length + 1;
-            newBlock.timeStamp = new Date().getTime().toString().slice(0,-3)
-            newBlock.previousHash = self.getLatestBlock().hash
-            self.chain.push(newBlock)
-            self.height = newBlock.height;
-        });     
+            try {
+                // Height 
+                const height = self.height + 1;
+                // Block header
+                block.height = height;
+                block.timeStamp = new Date().getTime().toString().slice(0,-3)
+                if (height > 0) {
+                    block.previousHash = self.chain[self.height].hash
+                }
+                block.hash = sha256(JSON.stringify(block)).toString()
+                // Add to the chain and update chain height
+                self.chain.push(block)
+                self.height = height;
+                // Resolve promise
+                resolve(block)
+            } catch (error) {
+                // Reject promise
+                reject(error)  
+            }
+        });
     }
     
     /**
@@ -99,15 +103,14 @@ module.exports = class Blockchain {
     */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-            
+            resolve(`${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`)
         });
     }
     
     /**
     * The submitStar(address, message, signature, star) method
-    * will allow users to register a new Block with the star object
-    * into the chain. This method will resolve with the Block added or
-    * reject with an error.
+    * will allow users to register a new Block with the star object into the chain.
+    * This method will resolve with the Block added or reject with an error.
     * Algorithm steps:
     * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
     * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
@@ -123,7 +126,30 @@ module.exports = class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            
+            try {
+                const messageTime = parseInt(message.split(':')[1]);
+                const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
+                // Message timeout ?
+                if ((currentTime-messageTime)/60 > 50) {
+                    reject('Timeout')
+                } else {
+                    // Wrong signature ?
+                    if (!bitcoinMessage.verify(message, address, signature)) {
+                        reject('Wrong signature')
+                    } else {
+                        // Add block and resolve/reject promise
+                        self._addBlock(new Block({
+                            "owner": address,
+                            ...star
+                        }))
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+                reject(error)
+            }
         });
     }
     
@@ -135,20 +161,25 @@ module.exports = class Blockchain {
     */
     getBlockByHash(hash) {
         let self = this;
-        return new Promise((resolve, reject) => {
-            
+        return new Promise((resolve) => {
+            const block = self.chain.filter(p => p.hash === hash)[0];
+            if(block){
+                resolve(block);
+            } else {
+                resolve(null);
+            }
         });
     }
     
-    /**
+   /**
     * This method will return a Promise that will resolve with the Block object 
     * with the height equal to the parameter `height`
     * @param {*} height 
     */
     getBlockByHeight(height) {
         let self = this;
-        return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
+        return new Promise((resolve) => {
+            const block = self.chain.filter(p => p.height === height)[0];
             if(block){
                 resolve(block);
             } else {
@@ -167,7 +198,19 @@ module.exports = class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            
+            try {
+                self.chain.forEach(block => {
+                    block.getBData()
+                    .then(body => {
+                        if (body.owner === address) stars.push(body)
+                    })
+                    .catch(error => console.log(error));
+                });
+                resolve(stars)
+            } catch (error) {
+                console.log(error)
+                reject(error)
+            }
         });
     }
     
@@ -181,7 +224,15 @@ module.exports = class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
+            const previousHash = self.chain[0].hash
+            self.chain.forEach(block => {
+                if (block.previousHash !== null && block.previousHash !== previousHash)
+                    errorLog.push(`Block ${block.hash} previousHash wrong`);
+                if (!block.validate) 
+                    errorLog.push(`Block ${block.hash} tampered`);
+                previousHash = block.hash;
+            });
+            resolve(errorLog)
         });
     }
 }

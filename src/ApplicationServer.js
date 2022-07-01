@@ -23,23 +23,23 @@ class ApplicationServer {
     }
 
     initExpress() {
-        this.app.set("port", 8000);
+        this.app.set('port', 8000);
     }
 
     initExpressMiddleWare() {
-        this.app.use(morgan("dev"));
+        this.app.use(morgan('dev'));
         this.app.use(bodyParser.urlencoded({extended:true}));
         this.app.use(bodyParser.json());
     }
 
     initControllers() {
-        require("./controllers/BlockchainController.js")(this.app, this.blockchain);
+        require('./controllers/BlockchainController.js')(this.app, this.blockchain);
     }
 
     start() {
         let self = this;
-        this.app.listen(this.app.get("port"), () => {
-            console.log(`Server Listening for port: ${self.app.get("port")}`);
+        this.app.listen(this.app.get('port'), () => {
+            console.log(`Server Listening for port: ${self.app.get('port')}`);
         });
     }
 

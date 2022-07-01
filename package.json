@@ -4,7 +4,7 @@
   "description": "First project of udacity blockchain developer nanodegree program",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,5 +28,8 @@
     "express": "^4.18.1",
     "hex2ascii": "^0.0.3",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
   }
 }

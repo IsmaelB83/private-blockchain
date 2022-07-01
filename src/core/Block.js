@@ -78,21 +78,12 @@ module.exports = class Block {
     getBData() {
         let self = this;
         return new Promise((resolve, reject) => {
-            // Genesis block --> Reject with error
-            if (self.height === 0) {
-                reject('Error - No data found in Genesis block')
-                return;
-            }
-            // No Genesis block --> Decode body and parse it as JSON
-            let body = null
             try {
-                const encoded = self.body;
-                const decoded = hex2ascii(encoded);
-                body = JSON.parse(decoded);     
+                const decoded = hex2ascii(self.body);
+                resolve(JSON.parse(decoded));     
             } catch (error) {
                 reject(error)
             }
-            resolve(body);
         });
     }
 }
