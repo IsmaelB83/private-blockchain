@@ -3,17 +3,16 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 // Own Imports
-const BlockChain = require('./core/Blockchain.js');
  
 const HTTP_PORT = process.env.HTTP_PORT || 3001;
 
 class ApplicationServer {
 
-    constructor() {
+    constructor(blockchain) {
         // Express application object
         this.app = express();
         // Blockchain class object
-        this.blockchain = new BlockChain();
+        this.blockchain = blockchain;
         // Method that initialized the express framework.
         this.initExpress();
         // Method that initialized middleware modules

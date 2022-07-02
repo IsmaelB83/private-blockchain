@@ -36,6 +36,11 @@ module.exports = class Blockchain {
         this._createGenesisBlock();
     }
     
+    // TEMP
+    addHandlerSync(handlerSync) {
+        this.handlerSync = handlerSync;
+    }
+
     /**
     * This method will check for the height of the chain and if there isn't a Genesis Block it will create it.
     * You should use the `addBlock(block)` to create the Genesis Block
