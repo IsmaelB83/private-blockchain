@@ -18,7 +18,7 @@ const Block = require('./Block.js');
 *   - getBlockByHash()
 *   - getBlockByHeight()
 *   - getBlocksByWalletAddress()
-*   - validateChain() 
+*   - validate() 
 */
 module.exports = class Blockchain {
     
@@ -154,24 +154,28 @@ module.exports = class Blockchain {
     }
     
     /**
-    * This method will return a Promise that will resolve with the list of errors when validating the chain.
+    * This method will return a Promise that will resolve with true if the chain is valid.
     * Steps to validate:
     * 1. You should validate each block using `validateBlock`
     * 2. Each Block should check the with the previousBlockHash
     */
-    validateChain() {
+    validate() {
         let self = this;
-        let errorLog = [];
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             let previousHash = self.chain[0].hash
             self.chain.forEach(block => {
-                if (block.previousHash !== null && block.previousHash !== previousHash)
-                    errorLog.push(`Block ${block.hash} previousHash wrong`);
-                if (!block.validate) 
-                    errorLog.push(`Block ${block.hash} tampered`);
+                if (block.previousHash !== null && block.previousHash !== previousHash) {
+                    resolve(false)
+                    return;
+                }
+                const result = await block.validate();
+                if (!result) {
+                    resolve(false);
+                    return;
+                }
                 previousHash = block.hash;
             });
-            resolve(errorLog)
+            resolve(true);
         });
     }
 
@@ -231,6 +235,37 @@ module.exports = class Blockchain {
                 console.log(error);
                 reject(error)
             }
+        });
+    }
+
+    /**
+     * In case the receive chain is valid and longer than current chain this method replaces the current
+     * chain with the new one.
+     * @param {Array} newChain 
+     */
+    replaceChain(newChain) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            // Only accept new chain if its longer than current one
+            if(newChain.height > self.height) {
+                console.log('Received chain is not longer than current chain');
+                reject(false);
+                return;
+            }
+            // Only accept new chain if its also valid
+            self.validate()
+            .then(result => {
+                // Errors found
+                if (!result) {
+                    console.log('Received chain is invalid');
+                    reject(false);
+                    return;
+                }
+                // New chain is valid and longer. Replace current chain
+                self.chain = newChain;
+                self.height = self.chain.length - 1;
+                resolve(true);
+            });
         });
     }
 }
