@@ -163,8 +163,9 @@ module.exports = class Blockchain {
         let self = this;
         return new Promise(async (resolve) => {
             let previousHash = self.chain[0].hash
-            self.chain.forEach(block => {
-                if (block.previousHash !== null && block.previousHash !== previousHash) {
+            for (let i = 1; i < self.chain.length; i++) {
+                const block = self.chain[i] 
+                if (block.previousHash !== previousHash) {
                     resolve(false)
                     return;
                 }
@@ -174,7 +175,7 @@ module.exports = class Blockchain {
                     return;
                 }
                 previousHash = block.hash;
-            });
+            }
             resolve(true);
         });
     }

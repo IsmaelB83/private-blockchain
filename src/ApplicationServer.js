@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 // Own Imports
 const BlockChain = require('./core/Blockchain.js');
  
+const HTTP_PORT = process.env.HTTP_PORT || 3001;
+
 class ApplicationServer {
 
     constructor() {
@@ -23,7 +25,7 @@ class ApplicationServer {
     }
 
     initExpress() {
-        this.app.set('port', 8000);
+        this.app.set('port', HTTP_PORT);
     }
 
     initExpressMiddleWare() {

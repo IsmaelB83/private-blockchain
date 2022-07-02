@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/index.js",
+    "node1": "HTTP_PORT=3001 nodemon src/index.js",
+    "node2": "HTTP_PORT=3002 nodemon src/index.js",
+    "node3": "HTTP_PORT=3003 nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
