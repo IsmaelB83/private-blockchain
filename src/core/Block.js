@@ -32,14 +32,25 @@ module.exports = class Block {
         this.hash = null;
         // Block Height (consecutive number of each block)
         this.height = 0;
+        // Timestamp for the Block creation
+        this.timeStamp = new Date().getTime().toString().slice(0,-3);
         // Will contain the encoded transactions stored in the block
         this.body = Buffer.from(JSON.stringify(data)).toString('hex');  
-        // Timestamp for the Block creation
-        this.timeStamp = 0;
         // Reference to the previous Block Hash
         this.previousHash = null;
     }
     
+    /**
+     * This method returns a promise that resolves to true when hash value is calculated
+     */
+    mine() {
+        let self = this;
+        return new Promise((resolve) => {
+            self.hash = sha256(self.timeStamp, self.previousHash, self.body).toString()
+            resolve(true)
+        })
+    }
+
     /**
     *  validate() method will validate if the block has been tampered or not.
     *  Been tampered means that someone from outside the application tried to change

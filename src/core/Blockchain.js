@@ -1,5 +1,4 @@
 // Node imports
-const sha256 = require('crypto-js/sha256.js');
 const bitcoinMessage = require('bitcoinjs-message');
 // Own imports
 const Block = require('./Block.js');
@@ -44,8 +43,7 @@ module.exports = class Blockchain {
     */
     async _createGenesisBlock() {
         if( this.height === -1){
-            const block = new Block('Genesis Block');
-            await this._addBlock(block);
+            await this._addBlock(new Block('Genesis-Block'));
         }
     }
     
@@ -69,16 +67,18 @@ module.exports = class Blockchain {
                 const height = self.height + 1;
                 // Block header
                 block.height = height;
-                block.timeStamp = new Date().getTime().toString().slice(0,-3)
                 if (height > 0) {
                     block.previousHash = self.chain[self.height].hash
                 }
-                block.hash = sha256(JSON.stringify(block)).toString()
-                // Add to the chain and update chain height
-                self.chain.push(block)
-                self.height = height;
-                // Resolve promise
-                resolve(block)
+                // Calculate hash value (mining)
+                block.mine()
+                .then(() => {
+                    // Add to the chain and update chain height
+                    self.chain.push(block)
+                    self.height = height;
+                    // Resolve promise
+                    resolve(block)
+                })
             } catch (error) {
                 // Reject promise
                 reject(error)  
