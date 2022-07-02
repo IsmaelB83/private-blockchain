@@ -25,32 +25,52 @@ module.exports = class Block {
     
     /**
     * Constructor of a new block.
+    * @param {Block} Previous block
     * @param {*} data Block body
     */
-    constructor(data) {
+    constructor(previousBlock, data) {
         // Hash of the block
         this.hash = null;
-        // Block Height (consecutive number of each block)
-        this.height = 0;
         // Timestamp for the Block creation
         this.timeStamp = new Date().getTime().toString().slice(0,-3);
         // Will contain the encoded transactions stored in the block
-        this.body = Buffer.from(JSON.stringify(data)).toString('hex');  
+        this.body = Buffer.from(JSON.stringify(data)).toString('hex'); 
+        // Block Height (consecutive number of each block)
+        this.height = previousBlock ? previousBlock.height + 1 : 0; 
         // Reference to the previous Block Hash
-        this.previousHash = null;
+        this.previousHash = previousBlock ? previousBlock.hash : null;
     }
     
     /**
-     * This method returns a promise that resolves to true when hash value is calculated
+     * Creates genesis block
+     */
+    static GenesisBlock() {
+        const block = new this(null, 'Genesis block');
+        block.hash = Block.hash(block.timeStamp, '', block.body);
+        return block;
+    }
+
+    /**
+     * This method returns a promise that resolves to true when the block is mined
      */
     mine() {
         let self = this;
         return new Promise((resolve) => {
-            self.hash = sha256(self.timeStamp, self.previousHash, self.body).toString()
+            self.hash = Block.hash(self.timeStamp, self.previousHash, self.body)
             resolve(true)
         })
     }
 
+    /**
+     * This method only calculates the sha256
+     * @param {String} timeStamp 
+     * @param {String} previousHash 
+     * @param {Object} body 
+     * @returns String with the sha256 of the block
+     */
+    static hash(timeStamp, previousHash, body) {
+        return sha256(`${timeStamp}${previousHash}${JSON.stringify(body)}`).toString()
+    } 
     /**
     *  validate() method will validate if the block has been tampered or not.
     *  Been tampered means that someone from outside the application tried to change
@@ -96,5 +116,24 @@ module.exports = class Block {
                 reject(error)
             }
         });
+    }
+
+    /**
+     * Return string representation of the block
+     * @returns String
+     */
+    toString(){
+        const self = this;
+        this.getBData()
+        .then(result => {
+            return `
+                BLOCK ${self.height} - 
+                \nTimestamp : ${self.timestamp}
+                \nLast Hash : ${self.lastHash}
+                \nHash      : ${self.hash}
+                \nData      : ${JSON.stringify(result)}
+            `;
+        })
+        
     }
 }

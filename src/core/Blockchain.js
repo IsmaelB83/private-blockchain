@@ -41,15 +41,16 @@ module.exports = class Blockchain {
     * You should use the `addBlock(block)` to create the Genesis Block
     * Passing as a data `{data: 'Genesis Block'}`
     */
-    async _createGenesisBlock() {
+    _createGenesisBlock() {
         if( this.height === -1){
-            await this._addBlock(new Block('Genesis-Block'));
+            this.chain.push(Block.GenesisBlock());
+            this.height = 0;
         }
     }
     
     /**
     * _addBlock(block) will store a block in the chain
-    * @param {*} block 
+    * @param {*} data 
     * The method will return a Promise that will resolve with the block added
     * or reject if an error happen during the execution.
     * You will need to check for the height to assign the `previousBlockHash`,
@@ -59,23 +60,17 @@ module.exports = class Blockchain {
     * Note: the symbol `_` in the method name indicates in the javascript convention 
     * that this method is a private method. 
     */
-    _addBlock (block) {
+    _addBlock (body) {
         let self = this;
         return new Promise(async (resolve, reject) => {
             try {
-                // Height 
-                const height = self.height + 1;
-                // Block header
-                block.height = height;
-                if (height > 0) {
-                    block.previousHash = self.chain[self.height].hash
-                }
-                // Calculate hash value (mining)
+                // New Block
+                const block = new Block(self.chain[self.height], body)
                 block.mine()
                 .then(() => {
                     // Add to the chain and update chain height
                     self.chain.push(block)
-                    self.height = height;
+                    self.height = block.height;
                     // Resolve promise
                     resolve(block)
                 })
@@ -224,10 +219,10 @@ module.exports = class Blockchain {
                         reject('Wrong signature')
                     } else {
                         // Add block and resolve/reject promise
-                        self._addBlock(new Block({
+                        self._addBlock({
                             'owner': address,
                             ...content
-                        }))
+                        })
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                     }
