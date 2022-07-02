@@ -16,3 +16,7 @@ First project of udacity's blockchain developer nanodegree program
 6) http://localhost:8000/submitstar                 --> Submit a star to the blockchain
 7) http://localhost:8000/blocks/validate            --> Validate blocks in the blockchain
 8) http://localhost:8000/blocks/address/:address    --> Returns all the blocks associated to the block address
+
+## Sign messages
+An easy way to sign messaes is trough online tool https://reinproject.org/bitcoin-signature-tool/#sign
+Other option is us Electrum or Bitcoin Core to generate a PKey and sign transactions with it.

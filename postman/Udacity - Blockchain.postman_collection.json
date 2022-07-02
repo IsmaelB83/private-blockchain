@@ -26,19 +26,19 @@
 			"response": []
 		},
 		{
-			"name": "Log blockchain",
+			"name": "Print blockchain",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/log",
+					"raw": "http://localhost:8000/blockchain",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"log"
+						"blockchain"
 					]
 				}
 			},
@@ -50,14 +50,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/blocks/validate",
+					"raw": "http://localhost:8000/blockchain/validate",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"blocks",
+						"blockchain",
 						"validate"
 					]
 				}
@@ -65,19 +65,20 @@
 			"response": []
 		},
 		{
-			"name": "Blockchain by Address",
+			"name": "Blocks by Address",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/blocks/address/1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN",
+					"raw": "http://localhost:8000/blockchain/block/address/1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"blocks",
+						"blockchain",
+						"block",
 						"address",
 						"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN"
 					]
@@ -86,42 +87,44 @@
 			"response": []
 		},
 		{
-			"name": "Block Height",
+			"name": "Block by Height",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/block/height/1",
+					"raw": "http://localhost:8000/blockchain/block/height/0",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
+						"blockchain",
 						"block",
 						"height",
-						"1"
+						"0"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Block Hash",
+			"name": "Block by Hash",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/block/hash/d6d13ffe0def122f70ab31af7549356400363410e7de63f285caec58b58f17e7",
+					"raw": "http://localhost:8000/blockchain/block/hash/1be77f2c04ba7d08864b133022ae41ed818cbe0fb49185f30cc970070fbc60bd",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
+						"blockchain",
 						"block",
 						"hash",
-						"d6d13ffe0def122f70ab31af7549356400363410e7de63f285caec58b58f17e7"
+						"1be77f2c04ba7d08864b133022ae41ed818cbe0fb49185f30cc970070fbc60bd"
 					]
 				}
 			},
@@ -142,14 +145,16 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/requestValidation",
+					"raw": "http://localhost:8000/blockchain/block/requestmessage",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"requestValidation"
+						"blockchain",
+						"block",
+						"requestmessage"
 					]
 				}
 			},
@@ -162,7 +167,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"address\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN\",\n    \"message\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN:1656659756:starRegistry\",\n    \"signature\": \"GzqtPQAg10afpEJVFNvTFZg0QOaUeKwcdW/6YVuRGdCcKjcTk5DQT3XAoAXkIUOvKIByKjb1lVs1iSrc+EdlzSo=\",\n    \"star\": {\n        \"name\": \"Capricornio\",\n        \"coordenadas\": {\n            \"North\": \"N 21.22.44\",\n            \"East\": \"E 32.12.13\"\n        }\n    }\n}",
+					"raw": "{\n    \"address\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN\",\n    \"message\": \"1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN:1656741500:blockRegistry\",\n    \"signature\": \"G559YEKk9jI2uqDg8tXzdTDuPMjsrZ8zZnxx0KvsfW8xre2hxY2UzSuqKXU0HWS35qnDvW6glzIDn791a2LKtxQ=\",\n    \"star\": {\n        \"name\": \"Capricornio\",\n        \"coordenadas\": {\n            \"North\": \"N 22.22.44\",\n            \"East\": \"E 33.12.13\"\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -170,14 +175,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/submitstar",
+					"raw": "http://localhost:8000/blockchain/block",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"submitstar"
+						"blockchain",
+						"block"
 					]
 				}
 			},

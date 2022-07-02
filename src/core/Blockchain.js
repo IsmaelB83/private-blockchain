@@ -11,11 +11,14 @@ const Block = require('./Block.js');
 *  Main class that handles our simple private blockchain. 
 *  -------------------------------------------------------------------------
 *  Methods:
-*   - createGenesisBlock()
-*   - getLatestBlock()  
-*   - addBlock()
-*   - getBlock()
-*   - validateBlock()
+*   - _createGenesisBlock()
+*   - _addBlock()
+*   - getChainHeight()
+*   - requestMessageOwnershipVerification()
+*   - submitBlock()
+*   - getBlockByHash()
+*   - getBlockByHeight()
+*   - getBlocksByWalletAddress()
 *   - validateChain() 
 */
 module.exports = class Blockchain {
@@ -31,7 +34,7 @@ module.exports = class Blockchain {
     constructor() {
         this.chain = [];
         this.height = -1;
-        this.initializeChain();
+        this._createGenesisBlock();
     }
     
     /**
@@ -39,21 +42,11 @@ module.exports = class Blockchain {
     * You should use the `addBlock(block)` to create the Genesis Block
     * Passing as a data `{data: 'Genesis Block'}`
     */
-    async initializeChain() {
+    async _createGenesisBlock() {
         if( this.height === -1){
             const block = new Block('Genesis Block');
             await this._addBlock(block);
         }
-    }
-    
-    /**
-     * Utility method to obtain the chain length in blocks
-     * @returns promise that resolves with the chain height
-     */
-    getChainHeight() {
-        return new Promise((resolve) => {
-            resolve(this.height);
-        });
     }
     
     /**
@@ -92,64 +85,14 @@ module.exports = class Blockchain {
             }
         });
     }
-    
+        
     /**
-    * The requestMessageOwnershipVerification(address) method
-    * will allow you  to request a message that you will use to
-    * sign it with your Bitcoin Wallet (Electrum or Bitcoin Core)
-    * This is the first step before submit your Block.
-    * The method return a Promise that will resolve with the message to be signed
-    * @param {*} address 
-    */
-    requestMessageOwnershipVerification(address) {
+     * Utility method to obtain the chain length in blocks
+     * @returns promise that resolves with the chain height
+     */
+     getChainHeight() {
         return new Promise((resolve) => {
-            resolve(`${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`)
-        });
-    }
-    
-    /**
-    * The submitStar(address, message, signature, star) method
-    * will allow users to register a new Block with the star object into the chain.
-    * This method will resolve with the Block added or reject with an error.
-    * Algorithm steps:
-    * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
-    * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
-    * 3. Check if the time elapsed is less than 5 minutes
-    * 4. Veify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
-    * 5. Create the block and add it to the chain
-    * 6. Resolve with the block added.
-    * @param {*} address 
-    * @param {*} message 
-    * @param {*} signature 
-    * @param {*} star 
-    */
-    submitStar(address, message, signature, star) {
-        let self = this;
-        return new Promise(async (resolve, reject) => {
-            try {
-                const messageTime = parseInt(message.split(':')[1]);
-                const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
-                // Message timeout ?
-                if ((currentTime-messageTime)/60 > 50) {
-                    reject('Timeout')
-                } else {
-                    // Wrong signature ?
-                    if (!bitcoinMessage.verify(message, address, signature)) {
-                        reject('Wrong signature')
-                    } else {
-                        // Add block and resolve/reject promise
-                        self._addBlock(new Block({
-                            "owner": address,
-                            ...star
-                        }))
-                        .then(result => resolve(result))
-                        .catch(error => reject(error))
-                    }
-                }
-            } catch (error) {
-                console.log(error);
-                reject(error)
-            }
+            resolve(this.height);
         });
     }
     
@@ -189,24 +132,25 @@ module.exports = class Blockchain {
     }
     
     /**
-    * This method will return a Promise that will resolve with an array of Stars objects existing in the chain 
-    * and are belongs to the owner with the wallet address passed as parameter.
-    * Remember the star should be returned decoded.
+    * This method will return a Promise that will resolve with an array of blocks which address 
+    * belongs to the owner with the wallet address passed as parameter.
+    * Remember the block content should be returned decoded.
     * @param {*} address 
     */
-    getStarsByWalletAddress (address) {
+    getBlocksByWalletAddress (address) {
         let self = this;
-        let stars = [];
+        let blocks = [];
         return new Promise((resolve, reject) => {
             try {
                 self.chain.forEach(block => {
                     block.getBData()
                     .then(body => {
-                        if (body.owner === address) stars.push(body)
+                        if (body.owner === address) 
+                            blocks.push(body)
                     })
                     .catch(error => console.log(error));
                 });
-                resolve(stars)
+                resolve(blocks)
             } catch (error) {
                 console.log(error)
                 reject(error)
@@ -224,7 +168,7 @@ module.exports = class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            const previousHash = self.chain[0].hash
+            let previousHash = self.chain[0].hash
             self.chain.forEach(block => {
                 if (block.previousHash !== null && block.previousHash !== previousHash)
                     errorLog.push(`Block ${block.hash} previousHash wrong`);
@@ -233,6 +177,65 @@ module.exports = class Blockchain {
                 previousHash = block.hash;
             });
             resolve(errorLog)
+        });
+    }
+
+    /**
+    * The requestMessageOwnershipVerification(address) method
+    * will allow you  to request a message that you will use to sign it with your Bitcoin Wallet (Electrum or Bitcoin Core)
+    * This is the first step before submit your Block.
+    * The method return a Promise that will resolve with the message to be signed
+    * @param {*} address 
+    */
+     requestMessageOwnershipVerification(address) {
+        return new Promise((resolve) => {
+            resolve(`${address}:${new Date().getTime().toString().slice(0,-3)}:blockRegistry`)
+        });
+    }
+    
+    /**
+    * The submitBlock(address, message, signature, content) method
+    * will allow users to register a new Block with the content object into the chain.
+    * This method will resolve with the Block added or reject with an error.
+    * Algorithm steps:
+    * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
+    * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
+    * 3. Check if the time elapsed is less than 5 minutes
+    * 4. Veify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
+    * 5. Create the block and add it to the chain
+    * 6. Resolve with the block added.
+    * @param {*} address 
+    * @param {*} message 
+    * @param {*} signature 
+    * @param {*} content 
+    */
+    submitBlock(address, message, signature, content) {
+        let self = this;
+        return new Promise(async (resolve, reject) => {
+            try {
+                const messageTime = parseInt(message.split(':')[1]);
+                const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
+                // Message timeout ?
+                if ((currentTime-messageTime)/60 > 10) {
+                    reject('Timeout')
+                } else {
+                    // Wrong signature ?
+                    if (!bitcoinMessage.verify(message, address, signature)) {
+                        reject('Wrong signature')
+                    } else {
+                        // Add block and resolve/reject promise
+                        self._addBlock(new Block({
+                            'owner': address,
+                            ...content
+                        }))
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+                reject(error)
+            }
         });
     }
 }
