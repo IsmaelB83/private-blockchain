@@ -35,11 +35,6 @@ module.exports = class Blockchain {
         this.height = -1;
         this._createGenesisBlock();
     }
-    
-    // TEMP
-    addHandlerSync(handlerSync) {
-        this.handlerSync = handlerSync;
-    }
 
     /**
     * This method will check for the height of the chain and if there isn't a Genesis Block it will create it.
@@ -169,7 +164,7 @@ module.exports = class Blockchain {
         return new Promise(async (resolve) => {
             let previousHash = self.chain[0].hash
             for (let i = 1; i < self.chain.length; i++) {
-                const block = self.chain[i] 
+                const block = self.chain[i]
                 if (block.previousHash !== previousHash) {
                     resolve(false)
                     return;
@@ -221,7 +216,7 @@ module.exports = class Blockchain {
                 const messageTime = parseInt(message.split(':')[1]);
                 const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 // Message timeout ?
-                if ((currentTime-messageTime)/60 > 10) {
+                if ((currentTime-messageTime)/60 > 60) {
                     reject('Timeout')
                 } else {
                     // Wrong signature ?
@@ -253,18 +248,17 @@ module.exports = class Blockchain {
         const self = this;
         return new Promise((resolve, reject) => {
             // Only accept new chain if its longer than current one
-            if(newChain.height > self.height) {
-                console.log('Received chain is not longer than current chain');
-                reject(false);
+            if(newChain.height <= self.height) {
+                resolve(false);
                 return;
             }
             // Only accept new chain if its also valid
-            self.validate()
+             self.validate()
             .then(result => {
                 // Errors found
                 if (!result) {
                     console.log('Received chain is invalid');
-                    reject(false);
+                    resolve(false);
                     return;
                 }
                 // New chain is valid and longer. Replace current chain

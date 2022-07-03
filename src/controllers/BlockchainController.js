@@ -11,9 +11,10 @@ class BlockchainController {
     * @param {*} app Instance of the express app
     * @param {*} blockchain 
     */
-    constructor(app, blockchain) {
+    constructor(app, blockchain, p2pServer) {
         this.app = app;
         this.blockchain = blockchain;
+        this.p2pServer = p2pServer;
         // All the endpoints methods needs to be called in the constructor to initialize the route.
         this.welcome();
         this.getBlockByHeight();
@@ -101,7 +102,7 @@ class BlockchainController {
                         return res.status(404).send('Block Not Found!');
                     }
                 } catch (error) {
-                    return res.status(500).send('An error happened!');
+                    return res.status(500).send(JSON.stringify(error));
                 }
             } else {
                 return res.status(500).send('Blocks Not Found! Review the Parameters!');
@@ -137,10 +138,13 @@ class BlockchainController {
                 const star = req.body.star;
                 try {
                     let block = await this.blockchain.submitBlock(address, message, signature, star);
-                    if(block) return res.status(200).json(block);
+                    if(block) {
+                        this.p2pServer.syncChain();
+                        return res.status(200).json(block);
+                    }
                     return res.status(500).send('An error happened!');
                 } catch (error) {
-                    return res.status(500).send(error);
+                    return res.status(500).send(JSON.stringify(error));
                 }
             } else {
                 return res.status(500).send('Check the Body Parameter!');
@@ -159,13 +163,14 @@ class BlockchainController {
     validateBlockhain() {
         this.app.get('/blockchain/validate', async(req, res) => {
             try {
-                const errorLog = this.blockchain.validateChain();
-                res.status(200).send(errorLog);
+                this.blockchain.validate()
+                .then(result => (res.status(200).send(result)))
             } catch (error) {
-                res.status(500).send(error)
+                console.log(error)
+                res.status(500).send(JSON.stringify(error));
             }
         });
     }
 }
 
-module.exports = (app, blockchain) => { return new BlockchainController(app, blockchain);}
+module.exports = (app, blockchain, p2pServer) => { return new BlockchainController(app, blockchain, p2pServer);}

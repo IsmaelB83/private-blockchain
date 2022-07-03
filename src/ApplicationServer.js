@@ -8,11 +8,13 @@ const HTTP_PORT = process.env.HTTP_PORT || 3001;
 
 class ApplicationServer {
 
-    constructor(blockchain) {
+    constructor(p2pServer, blockchain) {
         // Express application object
         this.app = express();
         // Blockchain class object
         this.blockchain = blockchain;
+        // P2P Server
+        this.p2pServer = p2pServer
         // Method that initialized the express framework.
         this.initExpress();
         // Method that initialized middleware modules
@@ -34,7 +36,7 @@ class ApplicationServer {
     }
 
     initControllers() {
-        require('./controllers/BlockchainController.js')(this.app, this.blockchain);
+        require('./controllers/BlockchainController.js')(this.app, this.blockchain, this.p2pServer);
     }
 
     start() {
