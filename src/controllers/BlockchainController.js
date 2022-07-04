@@ -11,10 +11,10 @@ class BlockchainController {
     * @param {*} app Instance of the express app
     * @param {*} blockchain 
     */
-    constructor(app, blockchain, p2pServer) {
+    constructor(app, blockchain, nodeServer) {
         this.app = app;
         this.blockchain = blockchain;
-        this.p2pServer = p2pServer;
+        this.nodeServer = nodeServer;
         // All the endpoints methods needs to be called in the constructor to initialize the route.
         this.welcome();
         this.getBlockByHeight();
@@ -173,4 +173,4 @@ class BlockchainController {
     }
 }
 
-module.exports = (app, blockchain, p2pServer) => { return new BlockchainController(app, blockchain, p2pServer);}
+module.exports = (app, blockchain, nodeServer) => { return new BlockchainController(app, blockchain, nodeServer);}

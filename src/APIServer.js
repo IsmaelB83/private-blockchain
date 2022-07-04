@@ -6,15 +6,15 @@ const bodyParser = require('body-parser');
  
 const HTTP_PORT = process.env.HTTP_PORT || 3001;
 
-class ApplicationServer {
+class APIServer {
 
-    constructor(p2pServer, blockchain) {
+    constructor(nodeServer, blockchain) {
         // Express application object
         this.app = express();
         // Blockchain class object
         this.blockchain = blockchain;
-        // P2P Server
-        this.p2pServer = p2pServer
+        // Node Server
+        this.nodeServer = nodeServer
         // Method that initialized the express framework.
         this.initExpress();
         // Method that initialized middleware modules
@@ -36,16 +36,16 @@ class ApplicationServer {
     }
 
     initControllers() {
-        require('./controllers/BlockchainController.js')(this.app, this.blockchain, this.p2pServer);
+        require('./controllers/BlockchainController.js')(this.app, this.blockchain, this.nodeServer);
     }
 
     start() {
         let self = this;
         this.app.listen(this.app.get('port'), () => {
-            console.log(`Server Listening for port: ${self.app.get('port')}`);
+            console.log(`API on Port: ${self.app.get('port')}`);
         });
     }
 
 }
 
-module.exports = ApplicationServer;
+module.exports = APIServer;

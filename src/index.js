@@ -1,15 +1,15 @@
 // Node imports
-const ApplicationServer = require('./ApplicationServer');
+const APIServer = require('./APIServer');
 // Own Imports
 const BlockChain = require('./core/Blockchain.js');
-const P2PServer = require('./P2PServer.js');
+const NodeServer = require('./NodeServer.js');
 
 // Create the blochcain
 const blockchain = new BlockChain();
 
 // Run P2P Server
-const p2pserver = new P2PServer(blockchain);
-p2pserver.listen();
+const nodeServer = new NodeServer(blockchain);
+nodeServer.listen();
 
 // Run API server
-new ApplicationServer(p2pserver, blockchain);
+new APIServer(nodeServer, blockchain);

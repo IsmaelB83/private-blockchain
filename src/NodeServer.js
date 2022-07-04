@@ -5,11 +5,11 @@ const WebSocket = require('ws');
 const Blockchain = require('./core/Blockchain');
 
 // Declare the peer to peer server port 
-const P2P_PORT = process.env.P2P_PORT || 5001
+const NODE_PORT = process.env.NODE_PORT || 5001
 // Declare the list of nodes in the blockchain to connect to
 const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : [];
 
-class P2PServer {
+class NodeServer {
     
     /**
     * Constructor
@@ -25,14 +25,14 @@ class P2PServer {
     */
     listen() {
         // Create the p2p server with port as argument
-        const server = new WebSocket.Server({ port: P2P_PORT });
+        const server = new WebSocket.Server({ port: NODE_PORT });
         // Event listener and a callback function for any new connection on any new connection
         // the current instance will send the current chain to the newly connected peer
         server.on('connection', socket => this.connectSocket(socket));
         // To connect to the peers that we have specified
         this.connectToPeers();
         // Logs
-        console.log(`Listening for peer to peer connection on port : ${P2P_PORT}`);
+        console.log(`BC Node on Port: ${NODE_PORT}`);
     }
     
     /**
@@ -124,4 +124,4 @@ class P2PServer {
     }
 }
 
-module.exports = P2PServer;
+module.exports = NodeServer;
