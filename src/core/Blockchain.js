@@ -18,7 +18,7 @@ const Block = require('./Block.js');
 *   - getBlockByHash()
 *   - getBlockByHeight()
 *   - getBlocksByWalletAddress()
-*   - validate() 
+*   - validate()
 */
 module.exports = class Blockchain {
     
@@ -65,9 +65,8 @@ module.exports = class Blockchain {
         return new Promise(async (resolve, reject) => {
             try {
                 // New Block
-                const block = new Block(self.chain[self.height], body)
-                block.mine()
-                .then(() => {
+                Block.mine(self.chain[self.height], body)
+                .then(block => {
                     // Add to the chain and update chain height
                     self.chain.push(block)
                     self.height = block.height;
@@ -75,7 +74,6 @@ module.exports = class Blockchain {
                     resolve(block)
                 })
             } catch (error) {
-                // Reject promise
                 reject(error)  
             }
         });
@@ -101,11 +99,7 @@ module.exports = class Blockchain {
         let self = this;
         return new Promise((resolve) => {
             const block = self.chain.filter(p => p.hash === hash)[0];
-            if(block){
-                resolve(block);
-            } else {
-                resolve(null);
-            }
+            resolve(block);
         });
     }
     
@@ -118,11 +112,7 @@ module.exports = class Blockchain {
         let self = this;
         return new Promise((resolve) => {
             const block = self.chain.filter(p => p.height === height)[0];
-            if(block){
-                resolve(block);
-            } else {
-                resolve(null);
-            }
+            resolve(block);
         });
     }
     
@@ -161,19 +151,14 @@ module.exports = class Blockchain {
     */
     validate() {
         let self = this;
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             let previousHash = self.chain[0].hash
             for (let i = 1; i < self.chain.length; i++) {
                 const block = self.chain[i]
-                if (block.previousHash !== previousHash) {
-                    resolve(false)
-                    return;
-                }
-                const result = await block.validate();
-                if (!result) {
-                    resolve(false);
-                    return;
-                }
+                if (block.previousHash !== previousHash)
+                    return reject(`Previous hash wrong in block ${block.hash}`)
+                Block.validate(block)
+                .catch(error => reject(error));
                 previousHash = block.hash;
             }
             resolve(true);
@@ -216,22 +201,18 @@ module.exports = class Blockchain {
                 const messageTime = parseInt(message.split(':')[1]);
                 const currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 // Message timeout ?
-                if ((currentTime-messageTime)/60 > 60) {
-                    reject('Timeout')
-                } else {
-                    // Wrong signature ?
-                    if (!bitcoinMessage.verify(message, address, signature)) {
-                        reject('Wrong signature')
-                    } else {
-                        // Add block and resolve/reject promise
-                        self._addBlock({
-                            'owner': address,
-                            ...content
-                        })
-                        .then(result => resolve(result))
-                        .catch(error => reject(error))
-                    }
-                }
+                if ((currentTime-messageTime)/60 > 60)
+                    return reject('Timeout')
+                // Wrong signature ?
+                if (!bitcoinMessage.verify(message, address, signature))
+                    return reject('Wrong signature')
+                // Add block and resolve/reject promise
+                self._addBlock({
+                    'owner': address,
+                    ...content
+                })
+                .then(result => resolve(result))
+                .catch(error => reject(error))
             } catch (error) {
                 console.log(error);
                 reject(error)
@@ -240,32 +221,24 @@ module.exports = class Blockchain {
     }
 
     /**
-     * In case the receive chain is valid and longer than current chain this method replaces the current
-     * chain with the new one.
-     * @param {Array} newChain 
+     * Returns a promise that resolves to true in case current chain is replaced with new chain (should be longer and valid)
+     * @param {Object} blockchain JSON object with a chain that potentially could replace current one
      */
-    replaceChain(newChain) {
+    replaceChain(blockchain) {
         const self = this;
         return new Promise((resolve, reject) => {
             // Only accept new chain if its longer than current one
-            if(newChain.height <= self.height) {
-                resolve(false);
-                return;
-            }
+            if(blockchain.height <= self.height) 
+                return reject('Chain is shorter or equal to current chain');
             // Only accept new chain if its also valid
-             self.validate()
+            blockchain.validate()
             .then(result => {
-                // Errors found
-                if (!result) {
-                    console.log('Received chain is invalid');
-                    resolve(false);
-                    return;
-                }
                 // New chain is valid and longer. Replace current chain
-                self.chain = newChain;
-                self.height = self.chain.length - 1;
-                resolve(true);
-            });
+                self.chain = blockchain.chain;
+                self.height = blockchain.height;
+                resolve(result);
+            })
+            .catch(error => reject('Chain is not valid'))
         });
     }
 }

@@ -89,10 +89,7 @@ class P2PServer {
                 console.log(`Chain received has ${data.chain.length} blocks`);
                 // Try to replace current chain if it fits conditions
                 this.blockchain.replaceChain(data)
-                .then(result => {
-                    if (result) console.log('Replaced')
-                    else console.log('Ignored')
-                })
+                .then(result => console.log(`Replaced ${result}`))
                 .catch(error => console.log(error))
                 // Log
             } catch (error) {

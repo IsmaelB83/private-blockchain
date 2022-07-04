@@ -53,11 +53,11 @@ module.exports = class Block {
     /**
      * This method returns a promise that resolves to true when the block is mined
      */
-    mine() {
-        let self = this;
+    static mine(previousBlock, data) {
         return new Promise((resolve) => {
-            self.hash = Block.hash(self.timeStamp, self.previousHash, self.body)
-            resolve(true)
+            const block = new Block(previousBlock, data)
+            block.hash = Block.hash(block.timeStamp, block.previousHash, block.body)
+            resolve(block)
         })
     }
 
@@ -83,18 +83,15 @@ module.exports = class Block {
     *  5. Resolve true or false depending if it is valid or not.
     *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
     */
-    validate() {
-        let self = this;
+    static validate(block) {
         return new Promise((resolve, reject) => {
             // Recalculate hash
-            const oldHash = self.hash;
-            const currentHash = sha256(JSON.stringify(self)).toString();
+            const oldHash = block.hash;
+            const currentHash = sha256(JSON.stringify(block)).toString();
             // Resolve/reject promise
-            if (oldHash === currentHash) {
-                resolve(true);
-                return;
-            }
-            reject(false)
+            if (oldHash !== currentHash) 
+                reject(`Block hash ${oldHash} differs from calculated hash ${currentHash}`)
+            return resolve(true)
         });
     }
     
@@ -133,7 +130,6 @@ module.exports = class Block {
                 \nHash      : ${self.hash}
                 \nData      : ${JSON.stringify(result)}
             `;
-        })
-        
+        }) 
     }
 }
