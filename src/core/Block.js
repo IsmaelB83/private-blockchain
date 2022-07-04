@@ -2,6 +2,8 @@
 const sha256 = require('crypto-js/sha256.js');
 const hex2ascii = require('hex2ascii');
 
+const DIFFICULTY = 4;
+
 /**
 *  -------------------------------------------------------------------------
 *  BLOCK CLASS
@@ -29,6 +31,8 @@ module.exports = class Block {
     * @param {*} data Block body
     */
     constructor(previousBlock, data) {
+        // Nonce
+        this.nonce = 0;
         // Hash of the block
         this.hash = null;
         // Timestamp for the Block creation
@@ -55,8 +59,14 @@ module.exports = class Block {
      */
     static mine(previousBlock, data) {
         return new Promise((resolve) => {
+            // Create new block
             const block = new Block(previousBlock, data)
-            block.hash = Block.hash(block.timeStamp, block.previousHash, block.body)
+            // Mining until hash fulfill with current network difficulty (PoW)
+            do {
+                block.nonce++;
+                block.hash = Block.hash(block.timeStamp, block.previousHash, block.body, block.nonce)
+                console.log(`${block.hash} - ${block.nonce}`);
+            } while(block.hash.substring(0, DIFFICULTY) !== '0'.repeat(DIFFICULTY));
             resolve(block)
         })
     }
@@ -68,8 +78,8 @@ module.exports = class Block {
      * @param {Object} body 
      * @returns String with the sha256 of the block
      */
-    static hash(timeStamp, previousHash, body) {
-        return sha256(`${timeStamp}${previousHash}${JSON.stringify(body)}`).toString()
+    static hash(timeStamp, previousHash, body, nonce) {
+        return sha256(`${timeStamp}${previousHash}${JSON.stringify(body)}${nonce}`).toString()
     } 
     /**
     *  validate() method will validate if the block has been tampered or not.

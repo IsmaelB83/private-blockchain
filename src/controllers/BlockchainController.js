@@ -85,7 +85,6 @@ class BlockchainController {
             } else {
                 return res.status(404).send('Block Not Found! Review the Parameters!');
             }
-            
         });
     }
     
@@ -139,7 +138,7 @@ class BlockchainController {
                 try {
                     let block = await this.blockchain.submitBlock(address, message, signature, star);
                     if(block) {
-                        this.p2pServer.syncChain();
+                        this.nodeServer.syncChain();
                         return res.status(200).json(block);
                     }
                     return res.status(500).send('An error happened!');
