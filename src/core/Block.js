@@ -1,8 +1,8 @@
 // Node imports
 const sha256 = require('crypto-js/sha256.js');
 const hex2ascii = require('hex2ascii');
-
-const DIFFICULTY = 4;
+// Own imports
+const { DIFFICULTY, MINE_RATE } = require('../config');
 
 /**
 *  -------------------------------------------------------------------------
@@ -27,60 +27,86 @@ module.exports = class Block {
     
     /**
     * Constructor of a new block.
-    * @param {Block} Previous block
-    * @param {*} data Block body
+    * @param {Block} previousBlock Previous block in the chain
+    * @param {Date} timeStamp Block timestamp creation
+    * @param {String} hash Hash of the block
+    * @param {Object} data Block body
+    * @param {Number} nonce Nonce (PoW)
+    * @param {Number} difficulty Leading zeros required for the hash
     */
-    constructor(previousBlock, data) {
+    constructor(previousBlock, timeStamp, hash, data, nonce, difficulty, timeMining) {
         // Nonce
-        this.nonce = 0;
+        this.nonce = nonce;
         // Hash of the block
-        this.hash = null;
+        this.hash = hash;
         // Timestamp for the Block creation
-        this.timeStamp = new Date().getTime().toString().slice(0,-3);
+        this.timeStamp = timeStamp;
         // Will contain the encoded transactions stored in the block
         this.body = Buffer.from(JSON.stringify(data)).toString('hex'); 
         // Block Height (consecutive number of each block)
         this.height = previousBlock ? previousBlock.height + 1 : 0; 
         // Reference to the previous Block Hash
         this.previousHash = previousBlock ? previousBlock.hash : null;
+        // Difficulty
+        this.difficulty = difficulty || DIFFICULTY;
+        // Time mining
+        this.timeMining = timeMining;
     }
     
     /**
-     * Creates genesis block
-     */
+    * Creates genesis block
+    */
     static GenesisBlock() {
-        const block = new this(null, 'Genesis block');
-        block.hash = Block.hash(block.timeStamp, '', block.body);
-        return block;
+        const hash =  Block.hash(0, '', 'Genesis block', 0);
+        return new this(null, Date.now(), hash, 'Genesis block', 0, 0, 0);
     }
-
+    
     /**
-     * This method returns a promise that resolves to true when the block is mined
-     */
+    * This method returns a promise that resolves to true when the block is mined
+    */
     static mine(previousBlock, data) {
         return new Promise((resolve) => {
-            // Create new block
-            const block = new Block(previousBlock, data)
+            // Data that will belong to the block header
+            let difficulty = previousBlock.difficulty;
+            let nonce = -1;
+            let timeStamp = 0;
+            let hash = '';
+            let timeMining = Date.now();
             // Mining until hash fulfill with current network difficulty (PoW)
             do {
-                block.nonce++;
-                block.hash = Block.hash(block.timeStamp, block.previousHash, block.body, block.nonce)
-                console.log(`${block.hash} - ${block.nonce}`);
-            } while(block.hash.substring(0, DIFFICULTY) !== '0'.repeat(DIFFICULTY));
+                nonce++;
+                timeStamp = Date.now();
+                difficulty = Block.adjustDifficulty(previousBlock, timeStamp);
+                hash = Block.hash(timeStamp, previousBlock.hash, data, nonce)
+            } while(hash.substring(0, difficulty) !== '0'.repeat(difficulty));
+            const block = new this(previousBlock, timeStamp, hash, data, nonce, difficulty, Date.now() - timeMining);
             resolve(block)
         })
     }
-
+    
     /**
-     * This method only calculates the sha256
-     * @param {String} timeStamp 
-     * @param {String} previousHash 
-     * @param {Object} body 
-     * @returns String with the sha256 of the block
-     */
+    * This method only calculates the sha256
+    * @param {String} timeStamp 
+    * @param {String} previousHash 
+    * @param {Object} body 
+    * @returns String with the sha256 of the block
+    */
     static hash(timeStamp, previousHash, body, nonce) {
         return sha256(`${timeStamp}${previousHash}${JSON.stringify(body)}${nonce}`).toString()
     } 
+    
+    /**
+    * Utility function to adjust difficulty
+    */
+    static adjustDifficulty(previousBlock, currentTime) {
+        // Local variables
+        let difficulty = previousBlock.difficulty;
+        let lapse = previousBlock.timeStamp + MINE_RATE
+        // If time from last block mining + MINE_RATE in milisec is higher than current time difficulty will be previousBlock + 1. Otherwise decrease.
+        difficulty = lapse > currentTime ? difficulty + 1 : difficulty - 1; 
+        return difficulty; 
+    }
+    
     /**
     *  validate() method will validate if the block has been tampered or not.
     *  Been tampered means that someone from outside the application tried to change
@@ -100,7 +126,7 @@ module.exports = class Block {
             const currentHash = sha256(JSON.stringify(block)).toString();
             // Resolve/reject promise
             if (oldHash !== currentHash) 
-                reject(`Block hash ${oldHash} differs from calculated hash ${currentHash}`)
+            reject(`Block hash ${oldHash} differs from calculated hash ${currentHash}`)
             return resolve(true)
         });
     }
@@ -124,21 +150,21 @@ module.exports = class Block {
             }
         });
     }
-
+    
     /**
-     * Return string representation of the block
-     * @returns String
-     */
+    * Return string representation of the block
+    * @returns String
+    */
     toString(){
         const self = this;
         this.getBData()
         .then(result => {
             return `
-                BLOCK ${self.height} - 
-                \nTimestamp : ${self.timestamp}
-                \nLast Hash : ${self.lastHash}
-                \nHash      : ${self.hash}
-                \nData      : ${JSON.stringify(result)}
+            BLOCK ${self.height} - 
+            \nTimestamp : ${self.timestamp}
+            \nLast Hash : ${self.lastHash}
+            \nHash      : ${self.hash}
+            \nData      : ${JSON.stringify(result)}
             `;
         }) 
     }

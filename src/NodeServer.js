@@ -3,9 +3,8 @@ const { Block } = require('bitcoinjs-lib');
 const WebSocket = require('ws');
 // Own imports
 const Blockchain = require('./core/Blockchain');
+const { NODE_PORT,  } = require('./config'); 
 
-// Declare the peer to peer server port 
-const NODE_PORT = process.env.NODE_PORT || 5001
 // Declare the list of nodes in the blockchain to connect to
 const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : [];
 

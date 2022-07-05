@@ -2,9 +2,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-// Own Imports
- 
-const HTTP_PORT = process.env.HTTP_PORT || 3001;
+// Own impots
+const { HTTP_PORT } = require('./config'); 
 
 class APIServer {
 
