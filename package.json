@@ -27,9 +27,11 @@
     "bitcoinjs-message": "^2.2.0",
     "body-parser": "^1.20.0",
     "crypto-js": "^4.1.1",
+    "elliptic": "^6.5.4",
     "express": "^4.18.1",
     "hex2ascii": "^0.0.3",
     "morgan": "^1.10.0",
+    "uuid": "^8.3.2",
     "ws": "^8.8.0"
   },
   "devDependencies": {
