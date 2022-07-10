@@ -21,7 +21,7 @@ const { DIFFICULTY, MINE_RATE } = require('../config');
 *  -------------------------------------------------------------------------
 *  Methods:
 *   - validate() --> returns a promise that resolves with True if block hash is valid
-*   - getBData() --> returns a promise that resolves with JSON block body (unless genesis block)
+*   - getBodyData() --> returns a promise that resolves with JSON block body (unless genesis block)
 */
 module.exports = class Block {
     
@@ -56,9 +56,9 @@ module.exports = class Block {
     /**
     * Creates genesis block
     */
-    static GenesisBlock() {
-        const hash =  Block.hash(0, '', 'Genesis block', 0);
-        return new this(null, Date.now(), hash, 'Genesis block', 0, 0, 0);
+    static genesis() {
+        const hash =  Block.hash(0, null, 'Genesis block', 0);
+        return new this(null, 0, hash, 'Genesis block', 0, 0, 0);
     }
     
     /**
@@ -67,7 +67,7 @@ module.exports = class Block {
     static mine(previousBlock, data) {
         return new Promise((resolve) => {
             // Data that will belong to the block header
-            let difficulty = previousBlock.difficulty;
+            let difficulty = previousBlock.timeStamp ? previousBlock.difficulty : DIFFICULTY;
             let nonce = -1;
             let timeStamp = 0;
             let hash = '';
@@ -119,16 +119,26 @@ module.exports = class Block {
     *  5. Resolve true or false depending if it is valid or not.
     *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
     */
-    static validate(block) {
-        return new Promise((resolve, reject) => {
+    validate() {
+        const self = this;
+        return new Promise((resolve) => {
             // Recalculate hash
-            const oldHash = block.hash;
-            const currentHash = sha256(JSON.stringify(block)).toString();
+            const oldHash = self.hash;
+            const body = self.getBodyData();
+            const currentHash = Block.hash(self.timeStamp, self.previousHash, body, self.nonce);
             // Resolve/reject promise
             if (oldHash !== currentHash) 
-            reject(`Block hash ${oldHash} differs from calculated hash ${currentHash}`)
-            return resolve(true)
+            return resolve(false)
+            resolve(true)
         });
+    }
+    
+    /**
+    *  Auxiliary Method to sets the body content in json format
+    * @param {Object} data Data to be stored in the block body
+    */
+    setBodyData(data) {
+        this.body = Buffer.from(JSON.stringify(data)).toString('hex')
     }
     
     /**
@@ -139,16 +149,9 @@ module.exports = class Block {
     *  3. Resolve with the data and make sure that you don't need to return the data for the `genesis block` 
     *     or Reject with an error.
     */
-    getBData() {
-        let self = this;
-        return new Promise((resolve, reject) => {
-            try {
-                const decoded = hex2ascii(self.body);
-                resolve(JSON.parse(decoded));     
-            } catch (error) {
-                reject(error)
-            }
-        });
+    getBodyData() {
+        const decoded = hex2ascii(this.body);
+        return JSON.parse(decoded);
     }
     
     /**
@@ -156,16 +159,13 @@ module.exports = class Block {
     * @returns String
     */
     toString(){
-        const self = this;
-        this.getBData()
-        .then(result => {
-            return `
-            BLOCK ${self.height} - 
-            \nTimestamp : ${self.timestamp}
-            \nLast Hash : ${self.lastHash}
-            \nHash      : ${self.hash}
-            \nData      : ${JSON.stringify(result)}
-            `;
-        }) 
+        const body = this.getBodyData()
+        return `
+        BLOCK ${self.height} - 
+        \nTimestamp : ${self.timestamp}
+        \nLast Hash : ${self.lastHash}
+        \nHash      : ${self.hash}
+        \nData      : ${JSON.stringify(body)}
+        `;
     }
 }

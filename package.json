@@ -4,6 +4,7 @@
   "description": "First project of udacity blockchain developer nanodegree program",
   "main": "index.js",
   "scripts": {
+    "test": "jest --watchAll",
     "start": "nodemon src/index.js",
     "node1": "HTTP_PORT=3001 NODE_PORT=5001 nodemon src/index.js",
     "node2": "HTTP_PORT=3002 NODE_PORT=5002 PEERS=ws://localhost:5001 nodemon src/index.js",
@@ -35,6 +36,7 @@
     "ws": "^8.8.0"
   },
   "devDependencies": {
+    "jest": "^28.1.2",
     "nodemon": "^2.0.18"
   }
 }
