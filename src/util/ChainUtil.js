@@ -1,7 +1,7 @@
 // Node imports
 const EC = require('elliptic').ec;
 const sha256 = require('crypto-js/sha256');
-const uuidV1 = require('uuid/v1');
+const uuidv1 = require('uuidv1')
 
 // secp256k1 is the algorithm to generate key pair
 const ec = new EC('secp256k1');
@@ -16,7 +16,7 @@ class ChainUtil {
     }
 
     static id() {
-        return uuidV1();
+        return uuidv1();
     }
 
     static hash(data) {

@@ -1,4 +1,5 @@
 // Own imports
+const ChainUtil = require('../util/ChainUtil');
 const { INITIAL_BALANCE } = require('../config');
 
 class Wallet {

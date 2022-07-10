@@ -128,7 +128,7 @@ module.exports = class Block {
             const currentHash = Block.hash(self.timeStamp, self.previousHash, body, self.nonce);
             // Resolve/reject promise
             if (oldHash !== currentHash) 
-            return resolve(false)
+                return resolve(false)
             resolve(true)
         });
     }
