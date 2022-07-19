@@ -35,6 +35,7 @@ describe('Transaction',() => {
     });
 
     describe('transacting with less balance',() => {
+        
         beforeEach(() => {
             amount = 5000;
             transaction = Transaction.newTransaction(wallet,recipient,amount);
@@ -47,6 +48,7 @@ describe('Transaction',() => {
 
     
     describe('updated transaction',() => {
+
         let nextAmount, nextRecipient;
 
         beforeEach(() => {
@@ -64,7 +66,5 @@ describe('Transaction',() => {
             expect(transaction.outputs.find(output => output.address === nextRecipient).amount)
             .toEqual(nextAmount);
         })
-
-
     });
 });
