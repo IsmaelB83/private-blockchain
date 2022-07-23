@@ -1,25 +1,23 @@
 // Node imports
-const APIServer = require('./APIServer');
 // Own Imports
-const BlockChain = require('./core/Blockchain.js');
+const APIServer = require('./APIServer');
 const NodeServer = require('./NodeServer.js');
-const Wallet = require('./transaction/Wallet');
-const TransactionPool = require('./transaction/TransactionPool');
+const BlockChain = require('./core/Blockchain.js');
+const Wallet = require('./wallet/Wallet');
+const TransactionPool = require('./wallet/TransactionPool');
 
 // Config
 const { INITIAL_BALANCE } = require('./config')
 
-// create a new wallet
+// create a new wallet and transaction pool
 const wallet = new Wallet(INITIAL_BALANCE);
-
-// create a new transaction pool which will be later decentralized and synchronized using the peer to peer server
 const transactionPool = new TransactionPool();
 
 // Create the blochcain
 const blockchain = new BlockChain();
 
 // Run P2P Server
-const nodeServer = new NodeServer(blockchain, wallet, transactionPool);
+const nodeServer = new NodeServer(blockchain, transactionPool);
 nodeServer.listen();
 
 // Run API server

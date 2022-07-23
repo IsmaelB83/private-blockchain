@@ -41,15 +41,22 @@ class Wallet {
      */
     createTransaction(recipient, amount, transactionPool) {
 
+        if (!amount || !recipient) {
+            console.log ('Recipient and amount are mandatory');
+            return
+        }
+        
         if (amount > this.balance) {
             console.log(`Wallet balance ${this.balance} less than transaction amount ${amount}`)
             return
         }
+        
 
         let transaction = transactionPool.existingTransaction(this.publicKey)
         
-        if (transaction) 
+        if (transaction) {
             transaction.update(this, recipient, amount)
+        }
         else {
             transaction = Transaction.newTransaction(this, recipient, amount);
             transactionPool.updateOrAddTransaction(transaction)

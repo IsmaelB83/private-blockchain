@@ -30,6 +30,7 @@ class BlockchainController {
         this.printBlockchain();
         this.validateBlockhain();
         this.printTransactionPool();
+        this.postTransaction();
     }
     
     // Test api
@@ -40,23 +41,25 @@ class BlockchainController {
             Available endpoints are:\n
             
             Welcome endpoint
-            1) http://localhost:8000/
+            1) http://localhost:8000/ (GET)
             
             Query for blocks
-            2) http://localhost:8000/blockchain/block/height/:height
-            3) http://localhost:8000/blockchain/block/hash/:hash
-            4) http://localhost:8000/blockchain/block/address/:address
+            2) http://localhost:8000/blockchain/block/height/:height (GET)
+            3) http://localhost:8000/blockchain/block/hash/:hash (GET)
+            4) http://localhost:8000/blockchain/block/address/:address (GET)
             
             Add new blocks
-            5) http://localhost:8000/blockchain/block/requestmessage
-            6) http://localhost:8000/blockchain/block
+            5) http://localhost:8000/blockchain/block/requestmessage (POST)
+            6) http://localhost:8000/blockchain/block (POST)
             
             Log and validate blockchain
-            7) http://localhost:8000/blockchain
-            8) http://localhost:8000/blockchain/validation
+            7) http://localhost:8000/blockchain (GET)
+            8) http://localhost:8000/blockchain/validation (GET)
             
             Transaction pool
-            9) http://localhost:8000/transaction
+            9) http://localhost:8000/transaction (GET)
+            10) http://localhost:8000/transaction (POST)
+
             `;
             res.send(welcomeMessage);
         });
@@ -147,7 +150,7 @@ class BlockchainController {
                 try {
                     let block = await this.blockchain.submitBlock(address, message, signature, star);
                     if(block) {
-                        this.nodeServer.syncChain();
+                        this.nodeServer.syncBlockchain();
                         return res.status(200).json(block);
                     }
                     return res.status(500).send('An error happened!');
@@ -186,11 +189,12 @@ class BlockchainController {
     postTransaction() {
         this.app.post('/transaction', async(req, res) => {
             const { recipient, amount } = req.body;
-            this.wallet.createTransaction(
-                recipient,
-                amount,
-                this.transactionPool);
-            res.redirect('/transaction');
+            const transaction = this.wallet.createTransaction(recipient, amount, this.transactionPool);
+            if (transaction) {
+                this.nodeServer.syncTransaction(transaction)
+                return res.redirect('/transaction');
+            }
+            return res.status(500).send('Wrong information');
         });
     }
 }

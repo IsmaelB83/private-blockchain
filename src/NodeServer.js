@@ -3,7 +3,14 @@ const { Block } = require('bitcoinjs-lib');
 const WebSocket = require('ws');
 // Own imports
 const Blockchain = require('./core/Blockchain');
+const Transaction = require('./wallet/Transaction');
 const { NODE_PORT,  } = require('./config'); 
+
+// Message types (broadcast transactions and chains)
+const MESSAGE_TYPE = {
+    chain: 'CHAIN',
+    transaction: 'TRANSACTION'
+}
 
 // Declare the list of nodes in the blockchain to connect to
 const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : [];
@@ -14,9 +21,8 @@ class NodeServer {
     * Constructor
     * @param {Object} Blockchain 
     */
-    constructor(blockchain, wallet, transactionPool) {
+    constructor(blockchain, transactionPool) {
         this.blockchain = blockchain;
-        this.wallet = wallet;
         this.transactionPool = transactionPool;
         this.sockets = []
     }
@@ -45,8 +51,7 @@ class NodeServer {
             try {
                 // create a socket for each peer
                 const socket = new WebSocket(peer);
-                // open event listner is emitted when a connection is established
-                // saving the socket in the array
+                // open event listener is emitted when a connection is established. saving the socket in the array
                 socket.on('open',() => this.connectSocket(socket));   
             } catch (error) {
                 console.log(`Error connecting with peer ${peer}`)
@@ -65,34 +70,46 @@ class NodeServer {
             console.log('Socket connected');
             // register a message event listener to the socket
             this.messageHandler(socket);
-            // on new connection send the blockchain chain to the peer
-            this.sendChain(socket);           
+            // on new connection send the blockchain and transaction pool to the peer
+            this.sendBlockchain(socket);
+            this.transactionPool.transactions.forEach(transaction => {
+                this.sendTransaction(socket, transaction);
+            });        
         } catch (error) {
             console.log(error)
         }
     }
     
     /**
-    * 
+    * Handler when a message is receive from socket
     * @param {*} socket 
     */
     messageHandler(socket){
-        //on recieving a message execute a callback function
-        socket.on('message', message =>{
+        // on recieving a message execute a callback function
+        socket.on('message', message => {
             try {
                 // Parse received chain
                 let data = JSON.parse(message);
-                data = Object.setPrototypeOf(data, Blockchain.prototype);
-                data.chain = Object.setPrototypeOf(data.chain, Array.prototype);
-                for (let i = 0; i < data.chain.length; i++) {
-                    data.chain[i] = Object.setPrototypeOf(data.chain[i], Block.prototype)
+                switch (data.type) {
+                    case MESSAGE_TYPE.chain:
+                        // Build js objects from JSON
+                        const blockchain = Object.setPrototypeOf(data.chain, Blockchain.prototype)
+                        const chain = Object.setPrototypeOf(blockchain.chain, Array.prototype);
+                        for (let i = 0; i < chain.length; i++) {
+                            chain[i] = Object.setPrototypeOf(chain[i], Block.prototype)
+                        }
+                        console.log(`Chain received has ${chain.length} blocks`);
+                        // Try to replace current chain if it fits conditions
+                        this.blockchain.replaceChain(blockchain)
+                        .then(result => console.log(`Replaced ${result}`))
+                        .catch(error => console.log(error))
+                        break;
+                    case MESSAGE_TYPE.transaction:
+                        const transaction = Object.setPrototypeOf(data.transaction, Transaction.prototype);
+                        console.log(`Received ${JSON.stringify(transaction)} transaction`)
+                        this.transactionPool.updateOrAddTransaction(transaction);
+                        break;
                 }
-                console.log(`Chain received has ${data.chain.length} blocks`);
-                // Try to replace current chain if it fits conditions
-                this.blockchain.replaceChain(data)
-                .then(result => console.log(`Replaced ${result}`))
-                .catch(error => console.log(error))
-                // Log
             } catch (error) {
                 console.log(error)
             }
@@ -100,28 +117,51 @@ class NodeServer {
     }
     
     /**
-    * helper function to send the chain instance
-    * @param {*} socket 
+    * Method to sync blockchain among nodes whenever a new block is added to the blockchain
     */
-    sendChain(socket){
-        try {
-            socket.send(JSON.stringify(this.blockchain));
-        } catch (error) {
-            console.log(error)
-        }
+    syncBlockchain() {
+        this.sockets.forEach(socket =>{
+            this.sendChain(socket);
+        }); 
     }
     
     /**
-    * utility function to sync the chain whenever a new block is added to the blockchain
+     * Method to sync transactions among nodes whenever a new transaction is added to the pool
+     * @param {*} transaction 
+     */  
+    syncTransaction(transaction){
+        this.sockets.forEach(socket => {
+            this.sendTransaction(socket, transaction);
+        }); 
+    }
+    
+    /**
+     * Send a transaction trough the socket
+     * @param {Object} socket Socket connection
+     * @param {Object} transaction Transaction to sync
+     */
+    sendTransaction(socket, transaction){
+        // JSON string
+        const txJSON = JSON.stringify({
+            type: MESSAGE_TYPE.transaction,
+            transaction: transaction
+        })
+        // Send
+        socket.send(txJSON);
+    }
+    
+    /**
+     * Send current blockchain trough the socket
+    * @param {Object} socket Socket connection
     */
-    syncChain(){
-        try {
-            this.sockets.forEach(socket =>{
-                this.sendChain(socket);
-            }); 
-        } catch (error) {
-            console.log(error)
-        }
+    sendBlockchain(socket){
+        // JSON string
+        const bcJSON = JSON.stringify({
+            type: MESSAGE_TYPE.chain,
+            chain: this.blockchain
+        })
+        // Send
+        socket.send(bcJSON);
     }
 }
 
