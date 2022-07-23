@@ -14,8 +14,10 @@ class NodeServer {
     * Constructor
     * @param {Object} Blockchain 
     */
-    constructor(blockchain) {
+    constructor(blockchain, wallet, transactionPool) {
         this.blockchain = blockchain;
+        this.wallet = wallet;
+        this.transactionPool = transactionPool;
         this.sockets = []
     }
     

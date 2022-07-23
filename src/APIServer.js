@@ -7,11 +7,15 @@ const { HTTP_PORT } = require('./config');
 
 class APIServer {
 
-    constructor(nodeServer, blockchain) {
+    constructor(nodeServer, blockchain, wallet, transactionPool) {
         // Express application object
         this.app = express();
         // Blockchain class object
         this.blockchain = blockchain;
+        // Wallet
+        this.wallet = wallet;
+        // Transaction pool of this node
+        this.transactionPool = transactionPool;
         // Node Server
         this.nodeServer = nodeServer
         // Method that initialized the express framework.
@@ -35,7 +39,7 @@ class APIServer {
     }
 
     initControllers() {
-        require('./controllers/BlockchainController.js')(this.app, this.blockchain, this.nodeServer);
+        require('./controllers/BlockchainController.js')(this.app, this.blockchain, this.nodeServer, this.wallet, this.transactionPool);
     }
 
     start() {
@@ -44,7 +48,6 @@ class APIServer {
             console.log(`API on Port: ${self.app.get('port')}`);
         });
     }
-
 }
 
 module.exports = APIServer;

@@ -26,20 +26,20 @@ class Transaction {
 
         const senderOutput = this.outputs.find(output => output.address === senderWallet.publicKey);
         
-        if(amount > senderWallet.amount) {
-            console.log(`Amount ${amount} exceeds balance`);
-            return;
-        }
+        // Error
+        if(amount > senderWallet.amount) return
         
+        // Updates amount in the txouput that goes to the sender (remaining balance)
         senderOutput.amount = senderOutput.amount - amount;
 
+        // Push an additional txouput in the transaction
         this.outputs.push({
             amount: amount,
             address: recipient
         });
         
         Transaction.signTransaction(this,senderWallet);
-        
+
         return this;
     }
     
@@ -52,10 +52,9 @@ class Transaction {
      */
     static newTransaction(senderWallet, recipient, amount) {
         
-        if(amount > senderWallet.balance) {
-            console.log(`Amount : ${amount} exceeds the balance`);
-            return;
-        }
+        // Error
+        if(amount > senderWallet.balance) 
+            return
         
         const transaction = new this();
         transaction.outputs.push(...[

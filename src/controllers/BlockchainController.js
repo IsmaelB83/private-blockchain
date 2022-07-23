@@ -10,11 +10,16 @@ class BlockchainController {
     * The constructor receive the instance of the express.js app and the Blockchain class
     * @param {*} app Instance of the express app
     * @param {*} blockchain 
+    * @param {*} nodeServer
+    * @param {*} wallet
+    * @param {*} transactionPool
     */
-    constructor(app, blockchain, nodeServer) {
+    constructor(app, blockchain, nodeServer, wallet, transactionPool) {
         this.app = app;
         this.blockchain = blockchain;
         this.nodeServer = nodeServer;
+        this.wallet = wallet;
+        this.transactionPool = transactionPool;
         // All the endpoints methods needs to be called in the constructor to initialize the route.
         this.welcome();
         this.getBlockByHeight();
@@ -24,6 +29,7 @@ class BlockchainController {
         this.submitBlock();
         this.printBlockchain();
         this.validateBlockhain();
+        this.printTransactionPool();
     }
     
     // Test api
@@ -48,6 +54,9 @@ class BlockchainController {
             Log and validate blockchain
             7) http://localhost:8000/blockchain
             8) http://localhost:8000/blockchain/validation
+            
+            Transaction pool
+            9) http://localhost:8000/transaction
             `;
             res.send(welcomeMessage);
         });
@@ -165,6 +174,25 @@ class BlockchainController {
             .then(result => (res.status(200).send(result)))
         });
     }
+
+    // This endpoint returns the transaction pool of this node
+    printTransactionPool() {
+        this.app.get('/transaction', async(req, res) => {
+            res.send(this.transactionPool);
+        });
+    }
+
+    // Creates a new transaction
+    postTransaction() {
+        this.app.post('/transaction', async(req, res) => {
+            const { recipient, amount } = req.body;
+            this.wallet.createTransaction(
+                recipient,
+                amount,
+                this.transactionPool);
+            res.redirect('/transaction');
+        });
+    }
 }
 
-module.exports = (app, blockchain, nodeServer) => { return new BlockchainController(app, blockchain, nodeServer);}
+module.exports = (app, blockchain, nodeServer, wallet, transactionPool) => { return new BlockchainController(app, blockchain, nodeServer, wallet, transactionPool);}

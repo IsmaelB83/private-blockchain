@@ -2,12 +2,15 @@
 const Transaction = require('./Transaction');
 const Wallet = require('./Wallet');
 
+// Config
+const { INITIAL_BALANCE } = require('../config')
+
 describe('Transaction',() => {
 
     let transaction, wallet, recipient, amount;
 
     beforeEach(() =>  {
-        wallet = new Wallet();
+        wallet = new Wallet(INITIAL_BALANCE);
         amount = 50;
         recipient = 'r3c1p13nt';
         transaction = Transaction.newTransaction(wallet, recipient, amount);
