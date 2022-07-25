@@ -31,6 +31,7 @@ class BlockchainController {
         this.validateBlockhain();
         this.printTransactionPool();
         this.postTransaction();
+        this.getPublicKey();
     }
     
     // Test api
@@ -41,24 +42,25 @@ class BlockchainController {
             Available endpoints are:\n
             
             Welcome endpoint
-            1) http://localhost:8000/ (GET)
+            1) http://localhostd:3001/ (GET)
             
             Query for blocks
-            2) http://localhost:8000/blockchain/block/height/:height (GET)
-            3) http://localhost:8000/blockchain/block/hash/:hash (GET)
-            4) http://localhost:8000/blockchain/block/address/:address (GET)
+            2) http://localhostd:3001/blockchain/block/height/:height (GET)
+            3) http://localhostd:3001/blockchain/block/hash/:hash (GET)
+            4) http://localhostd:3001/blockchain/block/address/:address (GET)
             
             Add new blocks
-            5) http://localhost:8000/blockchain/block/requestmessage (POST)
-            6) http://localhost:8000/blockchain/block (POST)
+            5) http://localhostd:3001/blockchain/block/requestmessage (POST)
+            6) http://localhostd:3001/blockchain/block (POST)
             
             Log and validate blockchain
-            7) http://localhost:8000/blockchain (GET)
-            8) http://localhost:8000/blockchain/validation (GET)
+            7) http://localhostd:3001/blockchain (GET)
+            8) http://localhostd:3001/blockchain/validation (GET)
             
             Transaction pool
-            9) http://localhost:8000/transaction (GET)
-            10) http://localhost:8000/transaction (POST)
+            9) http://localhostd:3001/wallet                 (GET)
+            10) http://localhostd:3001/wallet/transaction    (GET)
+            11) http://localhostd:3001/wallet/transaction    (POST)
 
             `;
             res.send(welcomeMessage);
@@ -178,16 +180,23 @@ class BlockchainController {
         });
     }
 
+    // This endpoint returns the public key of the wallet
+    getPublicKey() {
+        this.app.get('/wallet', async(req, res) => {
+            res.send(this.wallet.publicKey);
+        });
+    }
+        
     // This endpoint returns the transaction pool of this node
     printTransactionPool() {
-        this.app.get('/transaction', async(req, res) => {
+        this.app.get('/wallet/transaction', async(req, res) => {
             res.send(this.transactionPool);
         });
     }
 
     // Creates a new transaction
     postTransaction() {
-        this.app.post('/transaction', async(req, res) => {
+        this.app.post('/wallet/transaction', async(req, res) => {
             const { recipient, amount } = req.body;
             const transaction = this.wallet.createTransaction(recipient, amount, this.transactionPool);
             if (transaction) {

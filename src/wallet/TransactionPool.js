@@ -1,3 +1,6 @@
+// Own imports
+const Transaction = require('./Transaction')
+
 /**
 * Class that holds the pending transactions to be confirmed by miners
 */
@@ -36,6 +39,31 @@ class TransactionPool {
      */
     existingTransaction(address) {
         return this.transactions.find(t => t.input.address === address);
+    }
+
+    /**
+     * Valid transactions are the one whose total output amounts to the input and whose signatures are same
+     */
+    validTransactions() {
+         return this.transactions.filter(transaction => {
+            // Calculates total outputs of the transactions
+            const outputTotal = transaction.outputs.reduce((total, output) => (total + output.amount), 0)
+            // Input amount should match total output
+            if( transaction.input.amount !== outputTotal )
+                return console.log(`Invalid transaction from ${transaction.input.address}`);
+            // Check transactions signature
+            if(!Transaction.verifyTransaction(transaction))
+                return console.log(`Invalid signature from ${transaction.input.address}`);
+            // Transaction is good here
+            return transaction;
+        })
+    }
+
+    /**
+     * Empty transaction pool
+     */
+    clear() {
+        this.transactions = []
     }
 }
 

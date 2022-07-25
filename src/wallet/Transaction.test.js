@@ -3,7 +3,7 @@ const Transaction = require('./Transaction');
 const Wallet = require('./Wallet');
 
 // Config
-const { INITIAL_BALANCE } = require('../config')
+const { INITIAL_BALANCE, MINING_REWARD } = require('../config')
 
 describe('Transaction',() => {
 
@@ -69,5 +69,17 @@ describe('Transaction',() => {
             expect(transaction.outputs.find(output => output.address === nextRecipient).amount)
             .toEqual(nextAmount);
         })
+    });
+    
+    describe('creating a reward transaction',()=>{
+        beforeEach(()=>{
+            transaction = Transaction.rewardTransaction(wallet,Wallet.blockchainWallet());
+        });
+    
+
+        it('reward the miners wallet',()=>{
+            expect(transaction.outputs.find(output => output.address === wallet.publicKey).amount).toEqual(MINING_REWARD);
+        });
+
     });
 });

@@ -3,6 +3,7 @@
 const APIServer = require('./APIServer');
 const NodeServer = require('./NodeServer.js');
 const BlockChain = require('./core/Blockchain.js');
+const Miner = require('./core/Miner');
 const Wallet = require('./wallet/Wallet');
 const TransactionPool = require('./wallet/TransactionPool');
 
@@ -19,6 +20,9 @@ const blockchain = new BlockChain();
 // Run P2P Server
 const nodeServer = new NodeServer(blockchain, transactionPool);
 nodeServer.listen();
+
+// Miner 
+const miner = new Miner(blockchain, transactionPool, nodeServer, wallet);
 
 // Run API server
 new APIServer(nodeServer, blockchain, wallet, transactionPool);

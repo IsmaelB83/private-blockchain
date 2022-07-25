@@ -9,7 +9,8 @@ const { NODE_PORT,  } = require('./config');
 // Message types (broadcast transactions and chains)
 const MESSAGE_TYPE = {
     chain: 'CHAIN',
-    transaction: 'TRANSACTION'
+    transaction: 'TRANSACTION',
+    clear_transactions: 'CLEAR_TRANSACTIONS'
 }
 
 // Declare the list of nodes in the blockchain to connect to
@@ -109,6 +110,9 @@ class NodeServer {
                         console.log(`Received ${JSON.stringify(transaction)} transaction`)
                         this.transactionPool.updateOrAddTransaction(transaction);
                         break;
+                    case MESSAGE_TYPE.clear_transactions: 
+                        this.transactionPool.clear();
+                        break;
                 }
             } catch (error) {
                 console.log(error)
@@ -126,9 +130,9 @@ class NodeServer {
     }
     
     /**
-     * Method to sync transactions among nodes whenever a new transaction is added to the pool
-     * @param {*} transaction 
-     */  
+    * Method to sync transactions among nodes whenever a new transaction is added to the pool
+    * @param {*} transaction 
+    */  
     syncTransaction(transaction){
         this.sockets.forEach(socket => {
             this.sendTransaction(socket, transaction);
@@ -136,10 +140,10 @@ class NodeServer {
     }
     
     /**
-     * Send a transaction trough the socket
-     * @param {Object} socket Socket connection
-     * @param {Object} transaction Transaction to sync
-     */
+    * Send a transaction trough the socket
+    * @param {Object} socket Socket connection
+    * @param {Object} transaction Transaction to sync
+    */
     sendTransaction(socket, transaction){
         // JSON string
         const txJSON = JSON.stringify({
@@ -151,7 +155,7 @@ class NodeServer {
     }
     
     /**
-     * Send current blockchain trough the socket
+    * Send current blockchain trough the socket
     * @param {Object} socket Socket connection
     */
     sendBlockchain(socket){
@@ -162,6 +166,17 @@ class NodeServer {
         })
         // Send
         socket.send(bcJSON);
+    }
+    
+    /**
+    * Broadcast clear transactions event
+    */
+    broadcastClearTransactions() {
+        this.sockets.forEach(socket => {
+            socket.send(JSON.stringify({
+                type: MESSAGE_TYPE.clear_transactions
+            }))
+        })
     }
 }
 

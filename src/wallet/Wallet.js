@@ -3,6 +3,9 @@ const TransactionPool = require('./TransactionPool');
 const Transaction = require('./Transaction');
 const ChainUtil = require('../util/ChainUtil');
 
+// Config
+const { INITIAL_BALANCE } = require('../config');
+
 /**
  * Class to represent the wallet
  */
@@ -14,11 +17,21 @@ class Wallet {
      * and the balance
      */
     constructor(balance) {
-        this.balance = balance || 0;
+        this.balance = balance || INITIAL_BALANCE;
         this.keyPair = ChainUtil.genKeyPair();
         this.publicKey = this.keyPair.getPublic().encode('hex');
     }
 
+    /**
+     * Blockchain wallet
+     * @returns Returns the blockchain wallet
+     */
+    static blockchainWallet(){
+        const blockchainWallet = new this();
+        blockchainWallet.address = 'blockchain-wallet';
+        return blockchainWallet;
+    }
+    
     /**
      * Sign datahash with wallets pkey 
      */

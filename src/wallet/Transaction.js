@@ -1,7 +1,10 @@
 // Own nodes
 const ChainUtil = require('../util/ChainUtil');
 
-/**
+// Config 
+const { MINING_REWARD } = require('../config');
+
+/** 
 * Transaction
 */
 class Transaction {
@@ -42,7 +45,20 @@ class Transaction {
 
         return this;
     }
-    
+   
+    /**
+     * Helper method that creates a transaction with provided outputs
+     * @param {*} senderWallet 
+     * @param {*} outputs 
+     * @returns 
+     */
+    static transactionWithOutputs(senderWallet, outputs){
+        const transaction = new this();
+        transaction.outputs.push(...outputs);
+        Transaction.signTransaction(transaction, senderWallet);
+        return transaction;
+    }
+
     /**
      * 
      * @param {*} senderWallet 
@@ -57,22 +73,25 @@ class Transaction {
             return
         
         const transaction = new this();
-        transaction.outputs.push(...[
-            {
-                amount: senderWallet.balance - amount,
-                address: senderWallet.publicKey
-            },
-            {
-                amount: amount,
-                address: recipient
-            }
-        ]);
-        
-        Transaction.signTransaction(transaction, senderWallet);
-            
-        return transaction;
+        return Transaction.transactionWithOutputs(
+            senderWallet, 
+            [{   amount: senderWallet.balance - amount,  address: senderWallet.publicKey   },
+            {   amount: amount,                         address: recipient                }]
+        );
     }
        
+    /**
+     * Creates the reward transaction for a miner that provided a new block to the blockchain
+     * @param {*} minerWallet Miner wallet 
+     * @param {*} blockchainWallet Blockchain wallet
+     */
+    static rewardTransaction(minerWallet, blockchainWallet) {
+        return Transaction.transactionWithOutputs(
+            blockchainWallet,
+            [{ amount: MINING_REWARD,  address: minerWallet.publicKey }]
+        )
+    }
+
     /**
      * 
      * @param {*} transaction 
