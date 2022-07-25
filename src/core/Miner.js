@@ -1,5 +1,7 @@
 // Node modules
 // Own modules
+const Transaction = require('../wallet/Transaction');
+const Wallet = require('../wallet/Wallet');
 
 /**
  * Miner do the computational work to add blocks to the blockchain (PoW)
@@ -23,7 +25,7 @@ class Miner {
     mine() {
         const validTransactions = this.transactionPool.validTransactions();
         validTransactions.push(Transaction.rewardTransaction(this.wallet, Wallet.blockchainWallet()));
-        this.blockchain._addBlock(validTransactions)
+        return this.blockchain._addBlock(validTransactions)
         .then(block => {
             console.log(block);
             this.syncBlockchain();

@@ -25,4 +25,4 @@ nodeServer.listen();
 const miner = new Miner(blockchain, transactionPool, nodeServer, wallet);
 
 // Run API server
-new APIServer(nodeServer, blockchain, wallet, transactionPool);
+new APIServer(nodeServer, blockchain, wallet, transactionPool, miner);

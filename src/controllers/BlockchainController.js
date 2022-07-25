@@ -14,12 +14,13 @@ class BlockchainController {
     * @param {*} wallet
     * @param {*} transactionPool
     */
-    constructor(app, blockchain, nodeServer, wallet, transactionPool) {
+    constructor(app, blockchain, nodeServer, wallet, transactionPool, miner) {
         this.app = app;
         this.blockchain = blockchain;
         this.nodeServer = nodeServer;
         this.wallet = wallet;
         this.transactionPool = transactionPool;
+        this.miner = miner;
         // All the endpoints methods needs to be called in the constructor to initialize the route.
         this.welcome();
         this.getBlockByHeight();
@@ -29,6 +30,7 @@ class BlockchainController {
         this.submitBlock();
         this.printBlockchain();
         this.validateBlockhain();
+        this.startMining();
         this.printTransactionPool();
         this.postTransaction();
         this.getPublicKey();
@@ -42,25 +44,26 @@ class BlockchainController {
             Available endpoints are:\n
             
             Welcome endpoint
-            1) http://localhostd:3001/ (GET)
+            1) http://localhost:3001/ (GET)
             
             Query for blocks
-            2) http://localhostd:3001/blockchain/block/height/:height (GET)
-            3) http://localhostd:3001/blockchain/block/hash/:hash (GET)
-            4) http://localhostd:3001/blockchain/block/address/:address (GET)
+            2) http://localhost:3001/blockchain/block/height/:height    (GET)
+            3) http://localhost:3001/blockchain/block/hash/:hash        (GET)
+            4) http://localhost:3001/blockchain/block/address/:address  (GET)
             
             Add new blocks
-            5) http://localhostd:3001/blockchain/block/requestmessage (POST)
-            6) http://localhostd:3001/blockchain/block (POST)
+            5) http://localhost:3001/blockchain/block/requestmessage    (POST)
+            6) http://localhost:3001/blockchain/block                   (POST)
             
             Log and validate blockchain
-            7) http://localhostd:3001/blockchain (GET)
-            8) http://localhostd:3001/blockchain/validation (GET)
+            7) http://localhost:3001/blockchain                         (GET)
+            8) http://localhost:3001/blockchain/validation              (GET)
+            9) http://localhost:3001/blockchain/mine                    (GET)
             
             Transaction pool
-            9) http://localhostd:3001/wallet                 (GET)
-            10) http://localhostd:3001/wallet/transaction    (GET)
-            11) http://localhostd:3001/wallet/transaction    (POST)
+            10) http://localhost:3001/wallet                            (GET)
+            11) http://localhost:3001/wallet/transaction                (GET)
+            12) http://localhost:3001/wallet/transaction                (POST)
 
             `;
             res.send(welcomeMessage);
@@ -179,6 +182,15 @@ class BlockchainController {
             .then(result => (res.status(200).send(result)))
         });
     }
+    
+    // Tells the miner to start mining pending transactions
+    startMining() {
+        this.app.get('/blockchain/mine', async(req, res) => {
+            this.miner.mine()
+            .then(block => res.send(`New block added ${block.toString()}`))
+        });
+
+    }
 
     // This endpoint returns the public key of the wallet
     getPublicKey() {
@@ -201,11 +213,11 @@ class BlockchainController {
             const transaction = this.wallet.createTransaction(recipient, amount, this.transactionPool);
             if (transaction) {
                 this.nodeServer.syncTransaction(transaction)
-                return res.redirect('/transaction');
+                return res.redirect('/wallet/transaction');
             }
             return res.status(500).send('Wrong information');
         });
     }
 }
 
-module.exports = (app, blockchain, nodeServer, wallet, transactionPool) => { return new BlockchainController(app, blockchain, nodeServer, wallet, transactionPool);}
+module.exports = (app, blockchain, nodeServer, wallet, transactionPool, miner) => { return new BlockchainController(app, blockchain, nodeServer, wallet, transactionPool, miner);}
