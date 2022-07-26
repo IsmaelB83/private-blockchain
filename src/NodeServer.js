@@ -1,7 +1,7 @@
 // Node imports
-const { Block } = require('bitcoinjs-lib');
 const WebSocket = require('ws');
 // Own imports
+const Block = require('./core/Block');
 const Blockchain = require('./core/Blockchain');
 const Transaction = require('./wallet/Transaction');
 const { NODE_PORT,  } = require('./config'); 
@@ -95,11 +95,11 @@ class NodeServer {
                     case MESSAGE_TYPE.chain:
                         // Build js objects from JSON
                         const blockchain = Object.setPrototypeOf(data.chain, Blockchain.prototype)
-                        const chain = Object.setPrototypeOf(blockchain.chain, Array.prototype);
-                        for (let i = 0; i < chain.length; i++) {
-                            chain[i] = Object.setPrototypeOf(chain[i], Block.prototype)
+                        blockchain.chain = Object.setPrototypeOf(blockchain.chain, Array.prototype);
+                        for (let i = 0; i < blockchain.chain.length; i++) {
+                            blockchain.chain[i] = Object.setPrototypeOf(blockchain.chain[i], Block.prototype)
                         }
-                        console.log(`Chain received has ${chain.length} blocks`);
+                        console.log(`Chain received has ${blockchain.chain.length} blocks`);
                         // Try to replace current chain if it fits conditions
                         this.blockchain.replaceChain(blockchain)
                         .then(result => console.log(`Replaced ${result}`))
@@ -107,7 +107,7 @@ class NodeServer {
                         break;
                     case MESSAGE_TYPE.transaction:
                         const transaction = Object.setPrototypeOf(data.transaction, Transaction.prototype);
-                        console.log(`Received ${JSON.stringify(transaction)} transaction`)
+                        console.log(`Received transaction ${transaction.id} from ${transaction.input.address.substring(0,15)}`)
                         this.transactionPool.updateOrAddTransaction(transaction);
                         break;
                     case MESSAGE_TYPE.clear_transactions: 
@@ -125,7 +125,7 @@ class NodeServer {
     */
     syncBlockchain() {
         this.sockets.forEach(socket =>{
-            this.sendChain(socket);
+            this.sendBlockchain(socket);
         }); 
     }
     
@@ -139,6 +139,17 @@ class NodeServer {
         }); 
     }
     
+    /**
+    * Broadcast clear transactions event
+    */
+    syncClearTransactions() {
+        this.sockets.forEach(socket => {
+            socket.send(JSON.stringify({
+                type: MESSAGE_TYPE.clear_transactions
+            }))
+        })
+    }
+
     /**
     * Send a transaction trough the socket
     * @param {Object} socket Socket connection
@@ -166,17 +177,6 @@ class NodeServer {
         })
         // Send
         socket.send(bcJSON);
-    }
-    
-    /**
-    * Broadcast clear transactions event
-    */
-    broadcastClearTransactions() {
-        this.sockets.forEach(socket => {
-            socket.send(JSON.stringify({
-                type: MESSAGE_TYPE.clear_transactions
-            }))
-        })
     }
 }
 

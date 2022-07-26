@@ -132,15 +132,7 @@ module.exports = class Block {
             resolve(true)
         });
     }
-    
-    /**
-    *  Auxiliary Method to sets the body content in json format
-    * @param {Object} data Data to be stored in the block body
-    */
-    setBodyData(data) {
-        this.body = Buffer.from(JSON.stringify(data)).toString('hex')
-    }
-    
+
     /**
     *  Auxiliary Method to return the block body (decoding the data)
     *  Steps:
@@ -161,11 +153,11 @@ module.exports = class Block {
     toString(){
         const body = this.getBodyData()
         return `
-        BLOCK ${self.height} - 
-        \nTimestamp : ${self.timestamp}
-        \nLast Hash : ${self.lastHash}
-        \nHash      : ${self.hash}
-        \nData      : ${JSON.stringify(body)}
+            [BLOCK ${this.height}]  
+            TimeStamp    : ${this.timeStamp}
+            PreviousHash : ${this.previousHash}
+            Hash         : ${this.hash}
+            Body         : ${JSON.stringify(body)}
         `;
     }
 }

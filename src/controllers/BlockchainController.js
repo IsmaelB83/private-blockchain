@@ -187,9 +187,12 @@ class BlockchainController {
     startMining() {
         this.app.get('/blockchain/mine', async(req, res) => {
             this.miner.mine()
-            .then(block => res.send(`New block added ${block.toString()}`))
+            .then(block => res.send(`${block.toString()}`))
+            .catch(error => {
+                console.log(error)
+                res.status(500).send(error)
+            })
         });
-
     }
 
     // This endpoint returns the public key of the wallet

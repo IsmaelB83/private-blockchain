@@ -10,8 +10,8 @@ const Block = require('./Block.js');
 *  Main class that handles our simple private blockchain. 
 *  -------------------------------------------------------------------------
 *  Methods:
-*   - _createGenesisBlock()
-*   - _addBlock()
+*   - createGenesisBlock()
+*   - addBlock()
 *   - getChainHeight()
 *   - requestMessageOwnershipVerification()
 *   - submitBlock()
@@ -33,7 +33,7 @@ module.exports = class Blockchain {
     constructor() {
         this.chain = [];
         this.height = -1;
-        this._createGenesisBlock();
+        this.createGenesisBlock();
     }
 
     /**
@@ -41,7 +41,7 @@ module.exports = class Blockchain {
     * You should use the `addBlock(block)` to create the Genesis Block
     * Passing as a data `{data: 'Genesis Block'}`
     */
-    _createGenesisBlock() {
+    createGenesisBlock() {
         if( this.height === -1){
             this.chain.push(Block.genesis());
             this.height = 0;
@@ -49,7 +49,7 @@ module.exports = class Blockchain {
     }
     
     /**
-    * _addBlock(block) will store a block in the chain
+    * addBlock(block) will store a block in the chain
     * @param {*} data 
     * The method will return a Promise that will resolve with the block added
     * or reject if an error happen during the execution.
@@ -60,7 +60,7 @@ module.exports = class Blockchain {
     * Note: the symbol `_` in the method name indicates in the javascript convention 
     * that this method is a private method. 
     */
-    _addBlock (body) {
+    addBlock (body) {
         let self = this;
         return new Promise(async (resolve, reject) => {
             try {
@@ -207,7 +207,7 @@ module.exports = class Blockchain {
                 if (!bitcoinMessage.verify(message, address, signature))
                     return reject('Wrong signature')
                 // Add block and resolve/reject promise
-                self._addBlock({
+                self.addBlock({
                     'owner': address,
                     ...content
                 })

@@ -23,17 +23,26 @@ class Miner {
     }
 
     mine() {
-        const validTransactions = this.transactionPool.validTransactions();
-        validTransactions.push(Transaction.rewardTransaction(this.wallet, Wallet.blockchainWallet()));
-        return this.blockchain._addBlock(validTransactions)
-        .then(block => {
-            console.log(block);
-            this.syncBlockchain();
-            this.transactionPool.clear();
-            this.p2pServer.broadcastClearTransactions();
+        return new Promise(async (resolve, reject) => {
+            // Get valid transactions to mine
+                const validTransactions = this.transactionPool.validTransactions();
+            if (validTransactions.length) {
+                // Push reward transaction
+                validTransactions.push(Transaction.rewardTransaction(this.wallet, Wallet.blockchainWallet()));
+                // Start mining
+                this.blockchain.addBlock(validTransactions)
+                .then(block => {
+                    // Block mined
+                    this.transactionPool.clear();
+                    this.nodeServer.syncBlockchain();
+                    this.nodeServer.syncClearTransactions();
+                    resolve(block);
+                })
+                .catch(error => reject(error))
+            } else {
+                reject('Cero transactions to mine')
+            }
         })
-        .catch(error => console.log(error))
-
     }
 }
 

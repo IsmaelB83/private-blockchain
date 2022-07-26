@@ -16,7 +16,7 @@ describe("Blockchain",()=>{
     
     it('adds a new block',()=>{
         const data = {name: 'var'};
-        blockchain._addBlock(data)
+        blockchain.addBlock(data)
         .then(block => {
             const body = blockchain.chain[blockchain.chain.length-1].getBodyData()
             expect(body).toEqual(data)
@@ -25,7 +25,7 @@ describe("Blockchain",()=>{
     
     it('validates a valid chain',()=>{
         const data = {name: 'foo'}
-        blockchain._addBlock(data)
+        blockchain.addBlock(data)
         .then(block => {
             blockchain.validate()
             .then(result => expect(result).toBe(true));
@@ -34,23 +34,23 @@ describe("Blockchain",()=>{
     
     it('invalidates a chain with a corrupt the genesis block',()=> {
         const auxChain1 = new Blockchain();
-        auxChain1.chain[0].setBodyData({name:  'Corrupted genesis block'});
+        auxChain1.chain[0].body = Buffer.from(JSON.stringify({name:  'Corrupted genesis block'})).toString('hex');
         auxChain1.validate()
         .then(result => expect(result).toBe(false))
     });
     
     it('invalidates a corrupt chain in one of its blocks',()=>{
         const auxChain2 = new Blockchain();
-        auxChain2._addBlock('foo')
+        auxChain2.addBlock('foo')
         .then(block => {
-            auxChain2.chain[auxChain2.chain.length-1].setBodyData({name: "corrupted"});
+            auxChain2.chain[auxChain2.chain.length-1].body = Buffer.from(JSON.stringify({name:  'corrupted'})).toString('hex')
             auxChain2.validate()
             .then(result => expect(result).toBe(false))
         })
     });
     
     it('replaces the chain with a valid chain',()=>{
-        blockchain._addBlock('goo')
+        blockchain.addBlock('goo')
         .then(block => {
             const auxChain3 = new Blockchain();
             auxChain3.replaceChain(blockchain)
