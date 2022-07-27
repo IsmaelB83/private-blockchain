@@ -48,14 +48,9 @@ class TransactionPool {
          return this.transactions.filter(transaction => {
             // Calculates total outputs of the transactions
             const outputTotal = transaction.outputs.reduce((total, output) => (total + output.amount), 0)
-            // Input amount should match total output
-            if( transaction.input.amount !== outputTotal )
-                return console.log(`Invalid transaction from ${transaction.input.address}`);
-            // Check transactions signature
-            if(!Transaction.verifyTransaction(transaction))
-                return console.log(`Invalid signature from ${transaction.input.address}`);
-            // Transaction is good here
-            return transaction;
+            // Input amount should match total output and signature is valid
+            if(transaction.input.amount === outputTotal && Transaction.verifyTransaction(transaction))
+                return transaction;
         })
     }
 

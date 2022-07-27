@@ -1,5 +1,6 @@
 // Own imports
 const TransactionPool = require('./TransactionPool');
+const Blockchain = require('../core/Blockchain');
 const Wallet = require('./Wallet');
 
 // Config
@@ -7,12 +8,13 @@ const { INITIAL_BALANCE } = require('../config');
 
 describe('Transaction Pool',()=>{
 
-    let transactionPool, wallet, transaction;
+    let transactionPool, wallet, transaction, blockchain;
 
     beforeEach(()=>{
+        blockchain = new Blockchain();
         transactionPool = new TransactionPool();
         wallet = new Wallet(INITIAL_BALANCE);
-        transaction = wallet.createTransaction('r4nd-addr355', 30, transactionPool);
+        transaction = wallet.createTransaction('r4nd-addr355', 30, blockchain, transactionPool);
     });
 
     it('adds a transaction to the pool',()=>{
@@ -43,7 +45,7 @@ describe('Transaction Pool',()=>{
             // creating new transactions with corrupted transactions
             for (let i = 0;i<6;i++){
                 wallet = new Wallet();
-                transaction = wallet.createTransaction('r4nd-4ddr355', 30, transactionPool);
+                transaction = wallet.createTransaction('r4nd-4ddr355', 30, blockchain, transactionPool);
                 if(i&1){
                     transaction.input.amount = 999999;
                 }

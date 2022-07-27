@@ -213,7 +213,7 @@ class BlockchainController {
     postTransaction() {
         this.app.post('/wallet/transaction', async(req, res) => {
             const { recipient, amount } = req.body;
-            const transaction = this.wallet.createTransaction(recipient, amount, this.transactionPool);
+            const transaction = this.wallet.createTransaction(recipient, amount, this.blockchain, this.transactionPool);
             if (transaction) {
                 this.nodeServer.syncTransaction(transaction)
                 return res.redirect('/wallet/transaction');

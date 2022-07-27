@@ -25,7 +25,7 @@ class Miner {
     mine() {
         return new Promise(async (resolve, reject) => {
             // Get valid transactions to mine
-                const validTransactions = this.transactionPool.validTransactions();
+            const validTransactions = this.transactionPool.validTransactions();
             if (validTransactions.length) {
                 // Push reward transaction
                 validTransactions.push(Transaction.rewardTransaction(this.wallet, Wallet.blockchainWallet()));
